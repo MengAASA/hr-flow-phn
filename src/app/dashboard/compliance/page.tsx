@@ -9,7 +9,7 @@ import ComplianceDashboard from "@/app/component/compliance/ComplianceDashboard"
 export default async function CompliancePage() {
   const session = await getServerSession(authOptions);
 
-  if (!session || !(await canAccessHarassmentReports(session.user.staffid, session.user.role))) {
+  if (!session || !(await canAccessHarassmentReports(session.user.staffid, session.user.roles))) {
     redirect("/");
   }
 

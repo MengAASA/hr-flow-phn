@@ -263,6 +263,9 @@ export interface UserType {
   designation?: string | null;
   workLocation?: string | null;
   role: string;
+  // Primary role plus any extra roles granted on top of it (e.g. ADMIN
+  // granted to a user whose primary role stays HEAD_OF_SECTION).
+  roles?: string[];
   attachment?: string | null;
   // Form types a FORM_ADMIN may administer; empty/absent for other roles.
   formTypeScopes?: { formTypeId: number }[];

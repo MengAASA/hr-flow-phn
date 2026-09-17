@@ -8,6 +8,6 @@ export const ANALYTICS_ROLES: Role[] = [
   Role.FORM_ADMIN,
 ];
 
-export function canViewAnalytics(role: string | null | undefined): boolean {
-  return !!role && (ANALYTICS_ROLES as string[]).includes(role);
+export function canViewAnalytics(roles: string[] | null | undefined): boolean {
+  return !!roles && roles.some((r) => (ANALYTICS_ROLES as string[]).includes(r));
 }

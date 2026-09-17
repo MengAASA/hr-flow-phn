@@ -117,7 +117,7 @@ export default function Sidebar({
     fetchUser();
   }, [session]);
 
-  const showAnalytics = canViewAnalytics(user?.role);
+  const showAnalytics = canViewAnalytics(user?.roles);
 
   const menuItems = [
     {
@@ -471,7 +471,7 @@ export default function Sidebar({
                 }
 
                 // Only show Admin tab to the roles the admin page admits
-                if (item.name === "Admin" && !isAdminRole(user?.role)) {
+                if (item.name === "Admin" && !isAdminRole(user?.roles)) {
                   return false;
                 }
 

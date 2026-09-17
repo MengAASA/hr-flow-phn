@@ -14,7 +14,7 @@ export default async function FormAnalyticsPage() {
     redirect("/"); //protected page
   }
 
-  if (!canViewAnalytics(session.user.role)) {
+  if (!canViewAnalytics(session.user.roles)) {
     return (
       <div className="text-red-500 p-6">
         You don&apos;t have permission to view this page.

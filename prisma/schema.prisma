@@ -36,6 +36,22 @@ model User {
   approvalFlowSteps     ApprovalFlowStep[]
   approvalStepApprovers ApprovalStepApprover[]
   formTypeScopes        FormTypeAdmin[]
+  roles                 UserRole[]
+}
+
+// Extra roles a user holds on top of their primary organizational role
+// (User.role, which still drives approval routing/org hierarchy). Lets a
+// HEAD_OF_SECTION also be granted ADMIN, for example, without losing their
+// organizational position.
+model UserRole {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  role      Role
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
 }
 
 // Which form types a FORM_ADMIN is allowed to administer. A scoped admin may

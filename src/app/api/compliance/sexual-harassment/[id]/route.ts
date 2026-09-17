@@ -11,7 +11,7 @@ const emailFrom = process.env.EMAIL;
 const VALID_STATUSES = Object.values(SexualHarassmentReportStatus);
 
 function hasAdminAccess(session: Session | null) {
-  return session?.user?.role === "ADMIN";
+  return !!session?.user?.roles?.includes("ADMIN");
 }
 
 export async function GET(
@@ -20,7 +20,7 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || (!hasAdminAccess(session) && !(await canAccessHarassmentReports(session.user.staffid, session.user.role)))) {
+    if (!session || (!hasAdminAccess(session) && !(await canAccessHarassmentReports(session.user.staffid, session.user.roles)))) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -52,7 +52,7 @@ export async function PATCH(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || (!hasAdminAccess(session) && !(await canAccessHarassmentReports(session.user.staffid, session.user.role)))) {
+    if (!session || (!hasAdminAccess(session) && !(await canAccessHarassmentReports(session.user.staffid, session.user.roles)))) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

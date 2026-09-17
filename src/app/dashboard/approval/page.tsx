@@ -107,7 +107,7 @@ export default async function Approval() {
         : form.formData,
   }));
 
-  const officer = await canAccessHarassmentReports(staffid, session.user.role);
+  const officer = await canAccessHarassmentReports(staffid, session.user.roles);
   const [sexualHarassmentReports, sexualHarassmentReportsHistory] = officer
     ? await Promise.all([
         prisma.sexualHarassmentReport.findMany({

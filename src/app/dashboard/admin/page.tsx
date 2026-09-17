@@ -33,20 +33,20 @@ export default async function Admin() {
   // The sidebar only offers this page to admins, but the route itself was
   // reachable by anyone who typed the URL — and it renders every submission,
   // every user and the approval-flow builder.
-  if (!isAdminRole(session.user?.role)) {
+  if (!isAdminRole(session.user?.roles)) {
     redirect("/dashboard");
   }
 
   // null for a full admin; a list of form type ids for a scoped FORM_ADMIN.
   const scopedFormTypeIds = await getScopedFormTypeIds(
-    session.user?.role,
+    session.user?.roles,
     session.user?.staffid,
   );
 
   // Only a full ADMIN gets the complete tab set and any edit rights. Every
   // other admin role browses read-only; the user API enforces the same rule
   // independently of this flag.
-  const isFullAdmin = session.user?.role === "ADMIN";
+  const isFullAdmin = session.user?.roles?.includes("ADMIN") ?? false;
 
   const userListing = await prisma.user.findMany({
     include: {

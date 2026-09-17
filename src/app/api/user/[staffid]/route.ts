@@ -6,6 +6,7 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/src/lib/auth-options";
+import { flattenRoles } from "@/src/lib/admin-roles";
 
 export async function GET(
   req: NextRequest,
@@ -28,6 +29,7 @@ export async function GET(
 
     const findUser = await prisma.user.findUnique({
       where: { staffid },
+      include: { roles: { select: { role: true } } },
     });
 
     if (!findUser) {
@@ -37,8 +39,10 @@ export async function GET(
       );
     }
 
+    const data = { ...findUser, roles: flattenRoles(findUser.role, findUser.roles) };
+
     return NextResponse.json(
-      { message: "Retrieve current user", data: findUser },
+      { message: "Retrieve current user", data },
       { status: 200 },
     );
   } catch (e) {
@@ -69,6 +73,7 @@ export async function PUT(
       department,
       section,
       role,
+      additionalRoles,
       password,
       formTypeScopes,
     } = body;
@@ -79,13 +84,17 @@ export async function PUT(
 
     const currentUser = await prisma.user.findUnique({
       where: { staffid: loggedInStaffId },
-      select: { role: true },
+      select: { role: true, roles: { select: { role: true } } },
     });
 
     if (!currentUser)
       return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-    const isAdmin = currentUser.role === "ADMIN";
+    // A user with a full ADMIN grant may manage roles, whether ADMIN is their
+    // primary role or one they were additionally granted.
+    const isAdmin = flattenRoles(currentUser.role, currentUser.roles).includes(
+      "ADMIN",
+    );
 
     // 🛡️ Regular user can only update their own profile
     if (!isAdmin && loggedInStaffId !== staffid) {
@@ -136,20 +145,58 @@ export async function PUT(
       data: updateData,
     });
 
+    // 🔐 Extra roles on top of the primary role are admin-only, e.g. granting
+    // ADMIN to a user whose primary role stays HEAD_OF_SECTION. STAFF and the
+    // (now current) primary role are excluded — STAFF adds nothing, and the
+    // primary role is already represented by `updatedUser.role`.
+    if (isAdmin && Array.isArray(additionalRoles)) {
+      const extraRoles = [
+        ...new Set(
+          additionalRoles.filter(
+            (r: unknown): r is Role =>
+              typeof r === "string" &&
+              Object.values(Role).includes(r as Role) &&
+              r !== "STAFF" &&
+              r !== updatedUser.role,
+          ),
+        ),
+      ];
+
+      await prisma.$transaction([
+        prisma.userRole.deleteMany({
+          where: { userId: updatedUser.id },
+        }),
+        ...(extraRoles.length
+          ? [
+              prisma.userRole.createMany({
+                data: extraRoles.map((role) => ({
+                  userId: updatedUser.id,
+                  role,
+                })),
+                skipDuplicates: true,
+              }),
+            ]
+          : []),
+      ]);
+    }
+
+    const isFormAdmin =
+      updatedUser.role === "FORM_ADMIN" ||
+      (Array.isArray(additionalRoles) && additionalRoles.includes("FORM_ADMIN"));
+
     // 🔐 Form-type scope is admin-only, and only meaningful for FORM_ADMIN.
     // Any other role has its assignment cleared, so demoting a scoped admin
     // cannot leave stale rows that would come back if they were re-promoted.
     if (isAdmin && Array.isArray(formTypeScopes)) {
-      const scopeIds =
-        updatedUser.role === "FORM_ADMIN"
-          ? [
-              ...new Set(
-                formTypeScopes
-                  .map((id: unknown) => Number(id))
-                  .filter((id: number) => Number.isInteger(id) && id > 0),
-              ),
-            ]
-          : [];
+      const scopeIds = isFormAdmin
+        ? [
+            ...new Set(
+              formTypeScopes
+                .map((id: unknown) => Number(id))
+                .filter((id: number) => Number.isInteger(id) && id > 0),
+            ),
+          ]
+        : [];
 
       await prisma.$transaction([
         prisma.formTypeAdmin.deleteMany({
@@ -169,8 +216,16 @@ export async function PUT(
       ]);
     }
 
+    const refreshedRoles = await prisma.userRole.findMany({
+      where: { userId: updatedUser.id },
+      select: { role: true },
+    });
+
     return NextResponse.json(
-      { message: "Successfully updated", data: updatedUser },
+      {
+        message: "Successfully updated",
+        data: { ...updatedUser, roles: flattenRoles(updatedUser.role, refreshedRoles) },
+      },
       { status: 200 },
     );
   } catch (error) {

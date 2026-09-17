@@ -48,6 +48,9 @@ function UserForm({
   onUpdate,
 }: UserFormProps) {
   const [data, setData] = useState<UserType>(user);
+  const [additionalRoles, setAdditionalRoles] = useState<string[]>(
+    (user.roles ?? []).filter((r) => r !== user.role),
+  );
   const [formTypeScopes, setFormTypeScopes] = useState<string[]>(
     (user.formTypeScopes ?? []).map((s) => s.formTypeId.toString()),
   );
@@ -70,7 +73,8 @@ function UserForm({
     }));
   };
 
-  const isFormAdmin = data.role === "FORM_ADMIN";
+  const isFormAdmin =
+    data.role === "FORM_ADMIN" || additionalRoles.includes("FORM_ADMIN");
 
   const addDashOption = (menu: { id: number; name: string }[]) => {
     if (!menu.some((item) => item.name === "-")) {
@@ -92,6 +96,7 @@ function UserForm({
       // Sent only for the scoped role; the API clears the assignment for
       // anyone else, so demoting a form admin cannot leave orphaned scope.
       formTypeScopes: isFormAdmin ? formTypeScopes.map(Number) : [],
+      additionalRoles,
     };
     try {
       await axios.put(withBasePath(`/api/user/${user.staffid}`), formattedData);
@@ -296,12 +301,38 @@ function UserForm({
             menu={roles}
             selectedValue={data.role}
             onSelect={(item) => {
+              const newRole = item?.id as Role;
               setData((prev) => ({
                 ...prev,
-                role: item?.id as Role, // cast to Role type
+                role: newRole, // cast to Role type
               }));
+              // Keep the primary role out of the additional-roles list —
+              // it's already represented by the field above.
+              setAdditionalRoles((prev) => prev.filter((r) => r !== newRole));
             }}
           />
+        </div>
+
+        <div className={styleLink}>
+          <Label
+            name="Additional Roles"
+            htmlFor="additionalRoles"
+            className="block text-sm font-medium text-gray-900 dark:text-gray-100"
+          />
+          <MultiComboBox
+            disabled={readOnly}
+            menu={roles.filter(
+              (r) => r.id !== "STAFF" && r.id !== data.role,
+            )}
+            selectedValues={additionalRoles}
+            onSelect={(items) =>
+              setAdditionalRoles(items.map((i) => i.id.toString()))
+            }
+          />
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Roles granted on top of the primary role above (e.g. also making a
+            Head of Section an Admin).
+          </p>
         </div>
 
         {isFormAdmin && (

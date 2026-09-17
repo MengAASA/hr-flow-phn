@@ -1,4 +1,5 @@
 import { isAdminRole } from "@/src/lib/admin-access";
+import { flattenRoles } from "@/src/lib/admin-roles";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/src/lib/auth-options";
 import { NextRequest, NextResponse } from "next/server";
@@ -100,7 +101,7 @@ export async function GET() {
     // so any authenticated user gets a basic directory including org-unit
     // fields. Admin screens (user management, approval flow setup) get the
     // full detail below.
-    if (!isAdminRole(session.user?.role)) {
+    if (!isAdminRole(session.user?.roles)) {
       const users = await prisma.user.findMany({
         select: {
           id: true,
@@ -125,9 +126,14 @@ export async function GET() {
         department: true,
         section: true,
         formTypeScopes: { select: { formTypeId: true } },
+        roles: { select: { role: true } },
       },
     });
-    return NextResponse.json(users);
+    const usersWithRoles = users.map((u) => ({
+      ...u,
+      roles: flattenRoles(u.role, u.roles),
+    }));
+    return NextResponse.json(usersWithRoles);
   } catch (error) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }

@@ -10,6 +10,6 @@ export async function GET() {
     return NextResponse.json({ isComplianceOfficer: false }, { status: 200 });
   }
 
-  const officer = await canAccessHarassmentReports(session.user.staffid, session.user.role);
+  const officer = await canAccessHarassmentReports(session.user.staffid, session.user.roles);
   return NextResponse.json({ isComplianceOfficer: officer }, { status: 200 });
 }

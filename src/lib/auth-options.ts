@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcrypt";
 import { prisma } from "../../lib/prisma";
 import { withBasePath } from "../../lib/base-path";
+import { flattenRoles } from "./admin-roles";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -71,12 +72,14 @@ export const authOptions: NextAuthOptions = {
       if (token.staffid) {
         const dbUser = await prisma.user.findUnique({
           where: { staffid: token.staffid },
+          include: { roles: { select: { role: true } } },
         });
 
         if (dbUser) {
           token.name = dbUser.fullname;
           token.email = dbUser.email;
           token.role = dbUser.role;
+          token.roles = flattenRoles(dbUser.role, dbUser.roles);
         }
       }
 
@@ -90,6 +93,7 @@ export const authOptions: NextAuthOptions = {
           name: token.name,
           email: token.email,
           role: token.role,
+          roles: token.roles,
         };
       }
 

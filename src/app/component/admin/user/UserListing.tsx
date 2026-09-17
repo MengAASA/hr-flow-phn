@@ -88,6 +88,7 @@ export default function UserListing({
           user.designation,
           user.workLocation,
           user.role,
+          ...(user.roles ?? []),
         ]
           .filter((field): field is string => Boolean(field))
           .some((field) => field.toLowerCase().includes(query)),
@@ -182,15 +183,31 @@ export default function UserListing({
                         {user.designation}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span
-                          className={`text-[0.6rem] font-semibold px-2 py-0.5 rounded-full ${
-                            user.role === "Admin"
-                              ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400"
-                              : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
-                          }`}
-                        >
-                          {user.role}
-                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          <span
+                            className={`text-[0.6rem] font-semibold px-2 py-0.5 rounded-full ${
+                              user.role === "ADMIN"
+                                ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400"
+                                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+                            }`}
+                          >
+                            {user.role}
+                          </span>
+                          {(user.roles ?? [])
+                            .filter((r) => r !== user.role)
+                            .map((r) => (
+                              <span
+                                key={r}
+                                className={`text-[0.6rem] font-semibold px-2 py-0.5 rounded-full ${
+                                  r === "ADMIN"
+                                    ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400"
+                                    : "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"
+                                }`}
+                              >
+                                +{r}
+                              </span>
+                            ))}
+                        </div>
                       </td>
                     </tr>
                   )}

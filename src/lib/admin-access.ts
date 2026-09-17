@@ -20,10 +20,10 @@ export {
 // A scoped admin with no assignment gets an empty array — which filters
 // everything out, rather than accidentally showing them everything.
 export async function getScopedFormTypeIds(
-  role: string | null | undefined,
+  roles: string[] | null | undefined,
   staffid: string | null | undefined,
 ): Promise<number[] | null> {
-  if (!isScopedAdminRole(role)) return null;
+  if (!isScopedAdminRole(roles)) return null;
   if (!staffid) return [];
 
   const scopes = await prisma.formTypeAdmin.findMany({
@@ -48,7 +48,7 @@ export async function requireAdmin(): Promise<NextResponse | null> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!isAdminRole(session.user?.role)) {
+  if (!isAdminRole(session.user?.roles)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -65,7 +65,7 @@ export async function requireFullAdmin(): Promise<NextResponse | null> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!isFullAdminRole(session.user?.role)) {
+  if (!isFullAdminRole(session.user?.roles)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -85,7 +85,7 @@ export async function requireAdminScope(): Promise<
     };
   }
 
-  if (!isAdminRole(session.user?.role)) {
+  if (!isAdminRole(session.user?.roles)) {
     return {
       denied: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
     };
@@ -94,7 +94,7 @@ export async function requireAdminScope(): Promise<
   return {
     denied: null,
     formTypeIds: await getScopedFormTypeIds(
-      session.user?.role,
+      session.user?.roles,
       session.user?.staffid,
     ),
   };

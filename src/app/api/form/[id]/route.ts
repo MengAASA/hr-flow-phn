@@ -94,9 +94,9 @@ export async function GET(
     // A form-scoped admin may only open submissions of the form types assigned
     // to them — except their own submissions and ones they are an approver on,
     // which they hold in their ordinary capacity as a staff member.
-    if (isScopedAdminRole(session.user?.role)) {
+    if (isScopedAdminRole(session.user?.roles)) {
       const scopedIds = await getScopedFormTypeIds(
-        session.user?.role,
+        session.user?.roles,
         session.user?.staffid,
       );
       const isOwn = formDetails.createdBy.staffid === session.user?.staffid;

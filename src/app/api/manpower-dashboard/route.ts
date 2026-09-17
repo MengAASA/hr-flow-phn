@@ -40,7 +40,7 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!canViewAnalytics(session?.user?.role)) {
+    if (!canViewAnalytics(session?.user?.roles)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!canViewAnalytics(session.user.role)) {
+    if (!canViewAnalytics(session.user.roles)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 

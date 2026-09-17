@@ -54,13 +54,13 @@ export async function isComplianceOfficer(
  */
 export async function canAccessHarassmentReports(
   staffid: string | null | undefined,
-  role: string | null | undefined,
+  roles: string[] | null | undefined,
 ): Promise<boolean> {
   if (!staffid) return false;
 
   if (await isComplianceOfficer(staffid)) return true;
 
-  const scopedIds = await getScopedFormTypeIds(role, staffid);
+  const scopedIds = await getScopedFormTypeIds(roles, staffid);
   if (scopedIds === null) return false;
 
   const formType = await prisma.formType.findUnique({
