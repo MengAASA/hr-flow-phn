@@ -2,7 +2,9 @@
 
 import { SelfForm, SelfFormData, UserType } from "@/app/types/types";
 import Tabs, { TabItem } from "../ui/Tabs";
-import { useCallback, useEffect, useState } from "react";
+import ComboBox from "../ui/ComboBox";
+import DatePicker from "../ui/DatePicker";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import PendingContent from "./pendingComponent/PendingContent";
 import SubmissionContent from "./submissionComponent/SubmissionContent";
@@ -13,6 +15,7 @@ import ViewSubmission from "../form/ViewSubmission";
 import ViewSexualHarassmentReport, { FullSexualHarassmentReport } from "../compliance/ViewSexualHarassmentReport";
 import { withBasePath } from "@/lib/base-path";
 import { Toaster } from "react-hot-toast";
+import { FiSearch } from "react-icons/fi";
 
 interface User {
   fullname: string;
@@ -26,6 +29,7 @@ interface FormType {
 }
 export interface Submission {
   id: number;
+  referenceId?: string | null;
   createdBy: User;
   formType: FormType;
   formData: Record<string, unknown> | null;
@@ -82,6 +86,11 @@ export default function ApprovalComponent({
   const [forms, setForms] = useState(selfForms);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedRequestor, setSelectedRequestor] = useState("");
+  const [selectedFormType, setSelectedFormType] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [referenceIdSearch, setReferenceIdSearch] = useState("");
   const [isViewing, setIsViewing] = useState(false);
   const [viewedFormData, setViewedFormData] = useState<SelfFormData | null>(null);
   const [viewSource, setViewSource] = useState<ViewSource>("pending");
@@ -225,10 +234,98 @@ export default function ApprovalComponent({
     return true;
   };
 
-  const filteredApprovals = (approvals || []).filter((a) =>
-    isInRange(a.submission?.createdAt ?? new Date()),
+  const getApprovalDepartment = (a: Approval) => a.submission?.createdBy.department?.name;
+  const getApprovalRequestor = (a: Approval) => a.submission?.createdBy.fullname;
+  const getApprovalFormType = (a: Approval) => a.submission?.formType.name;
+
+  const toMenu = (values: string[]) => [
+    { id: "", name: "All" },
+    ...values.map((value) => ({ id: value, name: value })),
+  ];
+
+  const departmentMenu = useMemo(() => {
+    const set = new Set<string>();
+    (approvals || []).forEach((a) => {
+      const d = getApprovalDepartment(a);
+      if (d) set.add(d);
+    });
+    if ((forms || []).length > 0 && user.department?.name) set.add(user.department.name);
+    return toMenu(Array.from(set).sort());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [approvals, forms, user.department?.name]);
+
+  const requestorMenu = useMemo(() => {
+    const set = new Set<string>();
+    (approvals || []).forEach((a) => {
+      const r = getApprovalRequestor(a);
+      if (r) set.add(r);
+    });
+    if ((forms || []).length > 0) set.add("You");
+    return toMenu(Array.from(set).sort());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [approvals, forms]);
+
+  const formTypeMenu = useMemo(() => {
+    const set = new Set<string>();
+    (approvals || []).forEach((a) => {
+      const t = getApprovalFormType(a);
+      if (t) set.add(t);
+    });
+    (forms || []).forEach((f) => {
+      if (f.formType?.name) set.add(f.formType.name);
+    });
+    return toMenu(Array.from(set).sort());
+  }, [approvals, forms]);
+
+  const statusMenu = useMemo(() => {
+    const set = new Set<string>();
+    (approvals || []).forEach((a) => {
+      if (a.status) set.add(a.status);
+    });
+    (forms || []).forEach((f) => {
+      if (f.status) set.add(f.status);
+    });
+    return toMenu(Array.from(set).sort());
+  }, [approvals, forms]);
+
+  const matchesSelectFilters = (
+    department?: string | null,
+    requestor?: string | null,
+    formType?: string | null,
+    status?: string | null,
+    referenceId?: string | null,
+  ) => {
+    if (selectedDepartment && department !== selectedDepartment) return false;
+    if (selectedRequestor && requestor !== selectedRequestor) return false;
+    if (selectedFormType && formType !== selectedFormType) return false;
+    if (selectedStatus && status !== selectedStatus) return false;
+    const search = referenceIdSearch.trim().toLowerCase();
+    if (search && !referenceId?.toLowerCase().includes(search)) return false;
+    return true;
+  };
+
+  const filteredApprovals = (approvals || []).filter(
+    (a) =>
+      isInRange(a.submission?.createdAt ?? new Date()) &&
+      matchesSelectFilters(
+        getApprovalDepartment(a),
+        getApprovalRequestor(a),
+        getApprovalFormType(a),
+        a.status,
+        a.submission?.referenceId,
+      ),
   );
-  const filteredForms = (forms || []).filter((f) => isInRange(f.createdAt));
+  const filteredForms = (forms || []).filter(
+    (f) =>
+      isInRange(f.createdAt) &&
+      matchesSelectFilters(
+        user.department?.name,
+        "You",
+        f.formType?.name,
+        f.status,
+        f.referenceId,
+      ),
+  );
 
   const formsWithLevels = filteredForms.map((form) => {
     const approvalsList = form.approvals || [];
@@ -293,7 +390,6 @@ export default function ApprovalComponent({
           approvals={filteredApprovals}
           userPendingForms={userPendingForms}
           user={user}
-          onActionComplete={refreshData}
           onViewForm={handleViewForm}
           onViewReport={handleViewReport}
           sexualHarassmentReports={sexualHarassmentReports}
@@ -325,38 +421,108 @@ export default function ApprovalComponent({
     },
   ];
 
-  const hasFilter = dateFrom || dateTo;
+  const hasFilter =
+    dateFrom ||
+    dateTo ||
+    selectedDepartment ||
+    selectedRequestor ||
+    selectedFormType ||
+    selectedStatus ||
+    referenceIdSearch;
+
+  const inputClassName =
+    "w-full text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-gray-100 rounded-md py-2 pl-2 pr-8 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent";
 
   const dateFilter = (
-    <div className="flex items-center gap-2">
-      <div className="flex flex-col gap-0.5">
-        <label className="text-xs font-medium text-gray-500 dark:text-gray-400">From</label>
-        <input
-          type="date"
-          value={dateFrom}
-          max={dateTo || undefined}
-          onChange={(e) => setDateFrom(e.target.value)}
-          className="text-xs border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-        />
+    <div className="flex flex-col gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">Filter</span>
+        {hasFilter && (
+          <button
+            onClick={() => {
+              setDateFrom("");
+              setDateTo("");
+              setSelectedDepartment("");
+              setSelectedRequestor("");
+              setSelectedFormType("");
+              setSelectedStatus("");
+              setReferenceIdSearch("");
+            }}
+            className="text-xs text-indigo-700 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 underline"
+          >
+            Clear
+          </button>
+        )}
       </div>
-      <div className="flex flex-col gap-0.5">
-        <label className="text-xs font-medium text-gray-500 dark:text-gray-400">To</label>
-        <input
-          type="date"
-          value={dateTo}
-          min={dateFrom || undefined}
-          onChange={(e) => setDateTo(e.target.value)}
-          className="text-xs border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-        />
+
+      <div className="flex items-end flex-wrap gap-3">
+        <div className="flex flex-col gap-0.5 flex-[2] min-w-[220px]">
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 invisible">Search</label>
+          <div className="relative w-full">
+            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm" />
+            <input
+              type="text"
+              value={referenceIdSearch}
+              onChange={(e) => setReferenceIdSearch(e.target.value)}
+              placeholder="Search reference ID..."
+              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-md pl-9 pr-3 py-2 text-xs text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+        <div className="flex flex-col gap-0.5 flex-1 min-w-[160px] max-w-xs">
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400">From</label>
+          <DatePicker
+            value={dateFrom || null}
+            onChange={(value) => setDateFrom(value || "")}
+            placeholder="dd/mm/yyyy"
+            className={inputClassName}
+          />
+        </div>
+        <div className="flex flex-col gap-0.5 flex-1 min-w-[160px] max-w-xs">
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400">To</label>
+          <DatePicker
+            value={dateTo || null}
+            onChange={(value) => setDateTo(value || "")}
+            placeholder="dd/mm/yyyy"
+            className={inputClassName}
+          />
+        </div>
       </div>
-      {hasFilter && (
-        <button
-          onClick={() => { setDateFrom(""); setDateTo(""); }}
-          className="text-xs text-indigo-700 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 underline mt-4"
-        >
-          Clear
-        </button>
-      )}
+
+      <div className="flex items-end flex-wrap gap-3">
+        <div className="flex flex-col gap-0.5 flex-1 min-w-[160px]">
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Department</label>
+          <ComboBox
+            menu={departmentMenu}
+            selectedValue={selectedDepartment}
+            onSelect={(item) => setSelectedDepartment(item ? String(item.id) : "")}
+          />
+        </div>
+        <div className="flex flex-col gap-0.5 flex-1 min-w-[160px]">
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Requestor</label>
+          <ComboBox
+            menu={requestorMenu}
+            selectedValue={selectedRequestor}
+            onSelect={(item) => setSelectedRequestor(item ? String(item.id) : "")}
+          />
+        </div>
+        <div className="flex flex-col gap-0.5 flex-1 min-w-[160px]">
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Form Type</label>
+          <ComboBox
+            menu={formTypeMenu}
+            selectedValue={selectedFormType}
+            onSelect={(item) => setSelectedFormType(item ? String(item.id) : "")}
+          />
+        </div>
+        <div className="flex flex-col gap-0.5 flex-1 min-w-[160px]">
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Status</label>
+          <ComboBox
+            menu={statusMenu}
+            selectedValue={selectedStatus}
+            onSelect={(item) => setSelectedStatus(item ? String(item.id) : "")}
+          />
+        </div>
+      </div>
     </div>
   );
 
@@ -408,7 +574,7 @@ export default function ApprovalComponent({
             exit="exit"
             className="w-full"
           >
-            <Tabs tabs={categories} rightSlot={dateFilter} />
+            <Tabs tabs={categories} filterSlot={dateFilter} />
           </motion.div>
         )}
       </AnimatePresence>

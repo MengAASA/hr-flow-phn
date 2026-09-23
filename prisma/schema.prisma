@@ -122,6 +122,7 @@ model FormType {
 
 model FormSubmission {
   id          Int        @id @default(autoincrement())
+  referenceId String?    @unique
   formTypeId  Int
   createdById Int
   status      FormStatus @default(PENDING)

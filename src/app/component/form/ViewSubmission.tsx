@@ -265,9 +265,16 @@ export default function ViewSubmission({
 
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-              {form.formType.name}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+                {form.formType.name}
+              </h1>
+              {form.referenceId && (
+                <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                  {form.referenceId}
+                </span>
+              )}
+            </div>
             <p className="text-xs text-indigo-800 dark:text-indigo-400 font-light">
               This form is strictly for reference/viewing.
             </p>

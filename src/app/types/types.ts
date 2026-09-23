@@ -277,6 +277,7 @@ export interface FormData {
 
 export interface SelfForm {
   id: number;
+  referenceId?: string | null;
   formTypeId: number;
   createdById: number;
   status: string;
@@ -337,6 +338,7 @@ export interface FormSubmissionType {
 
 export interface SelfFormData {
   id: number;
+  referenceId?: string | null;
   formTypeId: number;
   formType: {
     name: string;

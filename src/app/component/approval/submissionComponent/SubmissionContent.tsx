@@ -2,7 +2,7 @@ import React from "react";
 import BannerTableRow from "../../ui/BannerTableRow";
 import ApprovalTable from "../../ui/ApprovalTable";
 import { SelfForm, UserType } from "@/app/types/types";
-import { getActionsSortValue, getLastApprovalDate } from "../approvalDateUtils";
+import { getLastApprovalDate } from "../approvalDateUtils";
 
 interface SubmissionContentProps {
   formsWithLevels: SelfForm[];
@@ -20,36 +20,28 @@ export default function SubmissionContent({
       items={formsWithLevels}
       pageSize={20}
       columns={[
-        { label: "Requester", sortAccessor: () => "You" },
-        { label: "Form Type", sortAccessor: (form) => form.formType.name },
+        { label: "Reference ID", sortAccessor: (form) => form.referenceId },
         { label: "Department", sortAccessor: () => user.department?.name },
+        { label: "Requester", sortAccessor: () => "You" },
         { label: "Date", sortAccessor: (form) => form.createdAt },
-        { label: "Level", sortAccessor: (form) => form.currentLevel ?? 0 },
         { label: "Status", sortAccessor: (form) => form.status },
+        { label: "Form Type", sortAccessor: (form) => form.formType.name },
         {
           label: "Last Approval Date",
           sortAccessor: (form) => getLastApprovalDate(form.approvals),
-        },
-        {
-          label: "Actions",
-          sortAccessor: (form) =>
-            getActionsSortValue({ status: form.status, roles: user.role, canApprove: false }),
         },
       ]}
       emptyMessage="You have no submitted forms."
       renderRow={(form) => (
         <BannerTableRow
           key={form.id}
+          referenceId={form.referenceId}
           profileImg={user.attachment || ""}
           title={form.formType.name}
           name={"You"}
           department={user.department?.name}
           createddate={form.createdAt}
           lastApprovalDate={getLastApprovalDate(form.approvals)}
-          currentLevel={form.currentLevel ?? 0}
-          totalLevel={form.totalLevel ?? 0}
-          activeLevel={form.activeLevel ?? 0}
-          roles={user.role}
           status={form.status}
           onClick={() => onViewForm(form.id, form.formType.name, "submissions")}
         />

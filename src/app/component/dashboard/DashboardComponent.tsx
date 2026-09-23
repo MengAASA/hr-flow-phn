@@ -12,7 +12,6 @@ import { Session } from "next-auth";
 import type { Variants } from "framer-motion";
 
 interface DashboardComponentProps {
-  countPendingForms: number;
   countApprovedForms: number;
   totalForms: number;
   totalMembers: number;
@@ -23,7 +22,6 @@ interface DashboardComponentProps {
 }
 
 export default function DashboardComponent({
-  countPendingForms,
   countApprovedForms,
   totalForms,
   totalMembers,
@@ -80,8 +78,8 @@ export default function DashboardComponent({
       >
         {[
           {
-            name: "Pending Forms",
-            count: countPendingForms,
+            name: "Pending Approvals",
+            count: attentionCount,
             icon: <FiFileText />,
             color: "yellow" as const,
           },

@@ -33,21 +33,3 @@ export function getLastApprovalDate(
     return new Date(date) > new Date(latest) ? date : latest;
   }, null);
 }
-
-// Mirrors what BannerTableRow's Actions cell actually renders, so the
-// Actions column can be sorted by that displayed value (e.g. "approved",
-// "rejected", "waiting", "-") instead of raw status.
-export function getActionsSortValue({
-  status,
-  roles,
-  canApprove,
-}: {
-  status?: string | null;
-  roles?: string;
-  canApprove: boolean;
-}): string {
-  if (!roles || roles === "STAFF") return "-";
-  if (canApprove) return "waiting";
-  if (status === "APPROVED" || status === "REJECTED") return status.toLowerCase();
-  return "-";
-}

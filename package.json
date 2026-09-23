@@ -8,7 +8,8 @@
     "start": "next start -p 3000",
     "lint": "eslint .",
     "cron": "ts-node server/cron.ts",
-    "build-cron": "tsc server/cron.ts --outDir dist"
+    "build-cron": "tsc server/cron.ts --outDir dist",
+    "backfill:reference-ids": "tsx prisma/backfill-reference-ids.ts"
   },
   "prisma": {
     "seed": "ts-node --transpile-only prisma/seed.ts"

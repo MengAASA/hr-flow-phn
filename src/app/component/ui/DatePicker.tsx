@@ -20,6 +20,7 @@ export default function DatePicker({
   disabled = false,
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [alignRight, setAlignRight] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(
     value ? new Date(value) : null
   );
@@ -41,8 +42,25 @@ export default function DatePicker({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const popupWidth = 320; // matches w-80
+
+  const openCalendar = () => {
+    if (disabled) return;
+    if (calendarRef.current) {
+      const rect = calendarRef.current.getBoundingClientRect();
+      const spaceRight = window.innerWidth - rect.left;
+      setAlignRight(spaceRight < popupWidth + 16);
+    }
+    setIsOpen(true);
+  };
+
   const toggleCalendar = () => {
-    if (!disabled) setIsOpen(!isOpen);
+    if (disabled) return;
+    if (isOpen) {
+      setIsOpen(false);
+    } else {
+      openCalendar();
+    }
   };
 
   const handleDateSelect = (date: Date) => {
@@ -135,7 +153,7 @@ export default function DatePicker({
           type="text"
           value={value || ""}
           onChange={(e) => onChange(e.target.value || null)}
-          onFocus={() => !disabled && setIsOpen(true)}
+          onFocus={openCalendar}
           placeholder={placeholder}
           disabled={disabled}
           className={`${className} ${
@@ -157,7 +175,9 @@ export default function DatePicker({
 
         {/* Calendar Popup */}
         {isOpen && !disabled && (
-          <div className="absolute top-full left-0 mt-2 z-10 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-300 dark:border-gray-700 p-6 w-80 animate-in fade-in-50 zoom-in-95">
+          <div
+            className={`absolute top-full ${alignRight ? "right-0" : "left-0"} mt-2 z-10 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-300 dark:border-gray-700 p-6 w-80 max-w-[90vw] animate-in fade-in-50 zoom-in-95`}
+          >
             {/* Calendar Header */}
             <div className="flex items-center justify-between mb-4">
               <button

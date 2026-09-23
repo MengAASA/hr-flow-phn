@@ -12,6 +12,7 @@ import {
   buildRoleWhere,
   resolveFormFieldApprover,
 } from "../../../../../lib/approverResolution";
+import { generateUniqueReferenceId } from "../../../../../lib/submission-code";
 
 const emailFrom = process.env.EMAIL;
 const webLink = process.env.NEXTAUTH_URL;
@@ -195,6 +196,7 @@ export async function POST(req: NextRequest) {
     // ✅ All approvers resolved — safe to create the submission
     const formSubmission = await prisma.formSubmission.create({
       data: {
+        referenceId: await generateUniqueReferenceId(),
         formTypeId: formId,
         createdById: findUser.id,
         status: "PENDING",

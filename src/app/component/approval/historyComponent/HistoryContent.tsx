@@ -4,7 +4,7 @@ import ApprovalTable from "../../ui/ApprovalTable";
 import { Approval, SexualHarassmentReportItem } from "../ApprovalComponent";
 import { SelfForm, UserType } from "@/app/types/types";
 import SexualHarassmentReportsTable from "../SexualHarassmentReportsTable";
-import { getApprovalActionDate, getActionsSortValue, getLastApprovalDate } from "../approvalDateUtils";
+import { getApprovalActionDate, getLastApprovalDate } from "../approvalDateUtils";
 
 interface HistoryContentProps {
   approvalsHistory: Approval[];
@@ -68,14 +68,9 @@ export default function HistoryContent({
           pageSize={20}
           columns={[
             {
-              label: "Requester",
+              label: "Reference ID",
               sortAccessor: (item) =>
-                item.type === "approval" ? item.data.submission?.createdBy.fullname : "You",
-            },
-            {
-              label: "Form Type",
-              sortAccessor: (item) =>
-                item.type === "approval" ? item.data.submission?.formType.name : item.data.formType.name,
+                item.type === "approval" ? item.data.submission?.referenceId : item.data.referenceId,
             },
             {
               label: "Department",
@@ -85,31 +80,27 @@ export default function HistoryContent({
                   : user.department?.name,
             },
             {
+              label: "Requester",
+              sortAccessor: (item) =>
+                item.type === "approval" ? item.data.submission?.createdBy.fullname : "You",
+            },
+            {
               label: "Date",
               sortAccessor: (item) =>
                 item.type === "approval" ? item.data.submission?.createdAt : item.data.createdAt,
             },
-            {
-              label: "Level",
-              sortAccessor: (item) =>
-                item.type === "approval" ? item.data.currentLevel : item.data.currentLevel ?? 0,
-            },
             { label: "Status", sortAccessor: (item) => item.data.status },
+            {
+              label: "Form Type",
+              sortAccessor: (item) =>
+                item.type === "approval" ? item.data.submission?.formType.name : item.data.formType.name,
+            },
             {
               label: "Last Approval Date",
               sortAccessor: (item) =>
                 item.type === "approval"
                   ? getApprovalActionDate(item.data)
                   : getLastApprovalDate(item.data.approvals),
-            },
-            {
-              label: "Actions",
-              sortAccessor: (item) =>
-                getActionsSortValue({
-                  status: item.data.status,
-                  roles: user.role,
-                  canApprove: false,
-                }),
             },
           ]}
           emptyMessage="No history found."
@@ -123,17 +114,13 @@ export default function HistoryContent({
               return (
                 <BannerTableRow
                   key={`approval-history-${approval.id}`}
-                  approvalId={approval.id}
+                  referenceId={submission.referenceId}
                   profileImg={submission.createdBy.attachment || ""}
                   title={submission.formType.name}
                   name={submission.createdBy.fullname}
                   department={submission.createdBy.department?.name}
                   createddate={submission.createdAt}
                   lastApprovalDate={getApprovalActionDate(approval)}
-                  currentLevel={approval.currentLevel}
-                  totalLevel={approval.totalLevel}
-                  activeLevel={approval.activeLevel}
-                  roles={user.role}
                   status={approval.status}
                   onClick={() =>
                     onViewForm(submission.id, submission.formType.name, "history")
@@ -145,16 +132,13 @@ export default function HistoryContent({
               return (
                 <BannerTableRow
                   key={`form-history-${form.id}`}
+                  referenceId={form.referenceId}
                   profileImg={user.attachment || ""}
                   title={form.formType.name}
                   name={"You"}
                   department={user.department?.name}
                   createddate={form.createdAt}
                   lastApprovalDate={getLastApprovalDate(form.approvals)}
-                  currentLevel={form.currentLevel ?? 0}
-                  totalLevel={form.totalLevel ?? 0}
-                  activeLevel={form.activeLevel ?? 0}
-                  roles={user.role}
                   status={form.status}
                   onClick={() => onViewForm(form.id, form.formType.name, "history")}
                 />

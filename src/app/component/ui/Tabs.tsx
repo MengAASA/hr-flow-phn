@@ -13,9 +13,10 @@ interface TabsProps {
   tabs: TabItem[];
   defaultIndex?: number;
   rightSlot?: React.ReactNode;
+  filterSlot?: React.ReactNode;
 }
 
-export default function Tabs({ tabs, defaultIndex = 0, rightSlot }: TabsProps) {
+export default function Tabs({ tabs, defaultIndex = 0, rightSlot, filterSlot }: TabsProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
@@ -60,6 +61,8 @@ export default function Tabs({ tabs, defaultIndex = 0, rightSlot }: TabsProps) {
         </TabList>
         {rightSlot && <div className="flex items-center">{rightSlot}</div>}
         </div>
+
+        {filterSlot && <div className="mt-4 w-full">{filterSlot}</div>}
 
         <TabPanels className="mt-6 overflow-visible">
           {tabs.map((tab) => (

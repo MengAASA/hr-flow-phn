@@ -40,6 +40,7 @@ export type FormSubmissionSumAggregateOutputType = {
 
 export type FormSubmissionMinAggregateOutputType = {
   id: number | null
+  referenceId: string | null
   formTypeId: number | null
   createdById: number | null
   status: $Enums.FormStatus | null
@@ -49,6 +50,7 @@ export type FormSubmissionMinAggregateOutputType = {
 
 export type FormSubmissionMaxAggregateOutputType = {
   id: number | null
+  referenceId: string | null
   formTypeId: number | null
   createdById: number | null
   status: $Enums.FormStatus | null
@@ -58,6 +60,7 @@ export type FormSubmissionMaxAggregateOutputType = {
 
 export type FormSubmissionCountAggregateOutputType = {
   id: number
+  referenceId: number
   formTypeId: number
   createdById: number
   status: number
@@ -82,6 +85,7 @@ export type FormSubmissionSumAggregateInputType = {
 
 export type FormSubmissionMinAggregateInputType = {
   id?: true
+  referenceId?: true
   formTypeId?: true
   createdById?: true
   status?: true
@@ -91,6 +95,7 @@ export type FormSubmissionMinAggregateInputType = {
 
 export type FormSubmissionMaxAggregateInputType = {
   id?: true
+  referenceId?: true
   formTypeId?: true
   createdById?: true
   status?: true
@@ -100,6 +105,7 @@ export type FormSubmissionMaxAggregateInputType = {
 
 export type FormSubmissionCountAggregateInputType = {
   id?: true
+  referenceId?: true
   formTypeId?: true
   createdById?: true
   status?: true
@@ -197,6 +203,7 @@ export type FormSubmissionGroupByArgs<ExtArgs extends runtime.Types.Extensions.I
 
 export type FormSubmissionGroupByOutputType = {
   id: number
+  referenceId: string | null
   formTypeId: number
   createdById: number
   status: $Enums.FormStatus
@@ -230,6 +237,7 @@ export type FormSubmissionWhereInput = {
   OR?: Prisma.FormSubmissionWhereInput[]
   NOT?: Prisma.FormSubmissionWhereInput | Prisma.FormSubmissionWhereInput[]
   id?: Prisma.IntFilter<"FormSubmission"> | number
+  referenceId?: Prisma.StringNullableFilter<"FormSubmission"> | string | null
   formTypeId?: Prisma.IntFilter<"FormSubmission"> | number
   createdById?: Prisma.IntFilter<"FormSubmission"> | number
   status?: Prisma.EnumFormStatusFilter<"FormSubmission"> | $Enums.FormStatus
@@ -244,6 +252,7 @@ export type FormSubmissionWhereInput = {
 
 export type FormSubmissionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  referenceId?: Prisma.SortOrderInput | Prisma.SortOrder
   formTypeId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -254,10 +263,12 @@ export type FormSubmissionOrderByWithRelationInput = {
   createdBy?: Prisma.UserOrderByWithRelationInput
   approvals?: Prisma.ApprovalOrderByRelationAggregateInput
   attachments?: Prisma.FileAttachmentOrderByRelationAggregateInput
+  _relevance?: Prisma.FormSubmissionOrderByRelevanceInput
 }
 
 export type FormSubmissionWhereUniqueInput = Prisma.AtLeast<{
   id?: number
+  referenceId?: string
   AND?: Prisma.FormSubmissionWhereInput | Prisma.FormSubmissionWhereInput[]
   OR?: Prisma.FormSubmissionWhereInput[]
   NOT?: Prisma.FormSubmissionWhereInput | Prisma.FormSubmissionWhereInput[]
@@ -271,10 +282,11 @@ export type FormSubmissionWhereUniqueInput = Prisma.AtLeast<{
   createdBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   approvals?: Prisma.ApprovalListRelationFilter
   attachments?: Prisma.FileAttachmentListRelationFilter
-}, "id">
+}, "id" | "referenceId">
 
 export type FormSubmissionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  referenceId?: Prisma.SortOrderInput | Prisma.SortOrder
   formTypeId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -293,6 +305,7 @@ export type FormSubmissionScalarWhereWithAggregatesInput = {
   OR?: Prisma.FormSubmissionScalarWhereWithAggregatesInput[]
   NOT?: Prisma.FormSubmissionScalarWhereWithAggregatesInput | Prisma.FormSubmissionScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"FormSubmission"> | number
+  referenceId?: Prisma.StringNullableWithAggregatesFilter<"FormSubmission"> | string | null
   formTypeId?: Prisma.IntWithAggregatesFilter<"FormSubmission"> | number
   createdById?: Prisma.IntWithAggregatesFilter<"FormSubmission"> | number
   status?: Prisma.EnumFormStatusWithAggregatesFilter<"FormSubmission"> | $Enums.FormStatus
@@ -302,6 +315,7 @@ export type FormSubmissionScalarWhereWithAggregatesInput = {
 }
 
 export type FormSubmissionCreateInput = {
+  referenceId?: string | null
   status?: $Enums.FormStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -314,6 +328,7 @@ export type FormSubmissionCreateInput = {
 
 export type FormSubmissionUncheckedCreateInput = {
   id?: number
+  referenceId?: string | null
   formTypeId: number
   createdById: number
   status?: $Enums.FormStatus
@@ -325,6 +340,7 @@ export type FormSubmissionUncheckedCreateInput = {
 }
 
 export type FormSubmissionUpdateInput = {
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumFormStatusFieldUpdateOperationsInput | $Enums.FormStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -337,6 +353,7 @@ export type FormSubmissionUpdateInput = {
 
 export type FormSubmissionUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   formTypeId?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumFormStatusFieldUpdateOperationsInput | $Enums.FormStatus
@@ -349,6 +366,7 @@ export type FormSubmissionUncheckedUpdateInput = {
 
 export type FormSubmissionCreateManyInput = {
   id?: number
+  referenceId?: string | null
   formTypeId: number
   createdById: number
   status?: $Enums.FormStatus
@@ -358,6 +376,7 @@ export type FormSubmissionCreateManyInput = {
 }
 
 export type FormSubmissionUpdateManyMutationInput = {
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumFormStatusFieldUpdateOperationsInput | $Enums.FormStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -366,6 +385,7 @@ export type FormSubmissionUpdateManyMutationInput = {
 
 export type FormSubmissionUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   formTypeId?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumFormStatusFieldUpdateOperationsInput | $Enums.FormStatus
@@ -384,8 +404,15 @@ export type FormSubmissionOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type FormSubmissionOrderByRelevanceInput = {
+  fields: Prisma.FormSubmissionOrderByRelevanceFieldEnum | Prisma.FormSubmissionOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
+}
+
 export type FormSubmissionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  referenceId?: Prisma.SortOrder
   formTypeId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -402,6 +429,7 @@ export type FormSubmissionAvgOrderByAggregateInput = {
 
 export type FormSubmissionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  referenceId?: Prisma.SortOrder
   formTypeId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -411,6 +439,7 @@ export type FormSubmissionMaxOrderByAggregateInput = {
 
 export type FormSubmissionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  referenceId?: Prisma.SortOrder
   formTypeId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -546,6 +575,7 @@ export type FormSubmissionUpdateOneRequiredWithoutApprovalsNestedInput = {
 }
 
 export type FormSubmissionCreateWithoutCreatedByInput = {
+  referenceId?: string | null
   status?: $Enums.FormStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -557,6 +587,7 @@ export type FormSubmissionCreateWithoutCreatedByInput = {
 
 export type FormSubmissionUncheckedCreateWithoutCreatedByInput = {
   id?: number
+  referenceId?: string | null
   formTypeId: number
   status?: $Enums.FormStatus
   createdAt?: Date | string
@@ -597,6 +628,7 @@ export type FormSubmissionScalarWhereInput = {
   OR?: Prisma.FormSubmissionScalarWhereInput[]
   NOT?: Prisma.FormSubmissionScalarWhereInput | Prisma.FormSubmissionScalarWhereInput[]
   id?: Prisma.IntFilter<"FormSubmission"> | number
+  referenceId?: Prisma.StringNullableFilter<"FormSubmission"> | string | null
   formTypeId?: Prisma.IntFilter<"FormSubmission"> | number
   createdById?: Prisma.IntFilter<"FormSubmission"> | number
   status?: Prisma.EnumFormStatusFilter<"FormSubmission"> | $Enums.FormStatus
@@ -606,6 +638,7 @@ export type FormSubmissionScalarWhereInput = {
 }
 
 export type FormSubmissionCreateWithoutFormTypeInput = {
+  referenceId?: string | null
   status?: $Enums.FormStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -617,6 +650,7 @@ export type FormSubmissionCreateWithoutFormTypeInput = {
 
 export type FormSubmissionUncheckedCreateWithoutFormTypeInput = {
   id?: number
+  referenceId?: string | null
   createdById: number
   status?: $Enums.FormStatus
   createdAt?: Date | string
@@ -653,6 +687,7 @@ export type FormSubmissionUpdateManyWithWhereWithoutFormTypeInput = {
 }
 
 export type FormSubmissionCreateWithoutAttachmentsInput = {
+  referenceId?: string | null
   status?: $Enums.FormStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -664,6 +699,7 @@ export type FormSubmissionCreateWithoutAttachmentsInput = {
 
 export type FormSubmissionUncheckedCreateWithoutAttachmentsInput = {
   id?: number
+  referenceId?: string | null
   formTypeId: number
   createdById: number
   status?: $Enums.FormStatus
@@ -690,6 +726,7 @@ export type FormSubmissionUpdateToOneWithWhereWithoutAttachmentsInput = {
 }
 
 export type FormSubmissionUpdateWithoutAttachmentsInput = {
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumFormStatusFieldUpdateOperationsInput | $Enums.FormStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -701,6 +738,7 @@ export type FormSubmissionUpdateWithoutAttachmentsInput = {
 
 export type FormSubmissionUncheckedUpdateWithoutAttachmentsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   formTypeId?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumFormStatusFieldUpdateOperationsInput | $Enums.FormStatus
@@ -711,6 +749,7 @@ export type FormSubmissionUncheckedUpdateWithoutAttachmentsInput = {
 }
 
 export type FormSubmissionCreateWithoutApprovalsInput = {
+  referenceId?: string | null
   status?: $Enums.FormStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -722,6 +761,7 @@ export type FormSubmissionCreateWithoutApprovalsInput = {
 
 export type FormSubmissionUncheckedCreateWithoutApprovalsInput = {
   id?: number
+  referenceId?: string | null
   formTypeId: number
   createdById: number
   status?: $Enums.FormStatus
@@ -748,6 +788,7 @@ export type FormSubmissionUpdateToOneWithWhereWithoutApprovalsInput = {
 }
 
 export type FormSubmissionUpdateWithoutApprovalsInput = {
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumFormStatusFieldUpdateOperationsInput | $Enums.FormStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -759,6 +800,7 @@ export type FormSubmissionUpdateWithoutApprovalsInput = {
 
 export type FormSubmissionUncheckedUpdateWithoutApprovalsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   formTypeId?: Prisma.IntFieldUpdateOperationsInput | number
   createdById?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumFormStatusFieldUpdateOperationsInput | $Enums.FormStatus
@@ -770,6 +812,7 @@ export type FormSubmissionUncheckedUpdateWithoutApprovalsInput = {
 
 export type FormSubmissionCreateManyCreatedByInput = {
   id?: number
+  referenceId?: string | null
   formTypeId: number
   status?: $Enums.FormStatus
   createdAt?: Date | string
@@ -778,6 +821,7 @@ export type FormSubmissionCreateManyCreatedByInput = {
 }
 
 export type FormSubmissionUpdateWithoutCreatedByInput = {
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumFormStatusFieldUpdateOperationsInput | $Enums.FormStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -789,6 +833,7 @@ export type FormSubmissionUpdateWithoutCreatedByInput = {
 
 export type FormSubmissionUncheckedUpdateWithoutCreatedByInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   formTypeId?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumFormStatusFieldUpdateOperationsInput | $Enums.FormStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -800,6 +845,7 @@ export type FormSubmissionUncheckedUpdateWithoutCreatedByInput = {
 
 export type FormSubmissionUncheckedUpdateManyWithoutCreatedByInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   formTypeId?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumFormStatusFieldUpdateOperationsInput | $Enums.FormStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -809,6 +855,7 @@ export type FormSubmissionUncheckedUpdateManyWithoutCreatedByInput = {
 
 export type FormSubmissionCreateManyFormTypeInput = {
   id?: number
+  referenceId?: string | null
   createdById: number
   status?: $Enums.FormStatus
   createdAt?: Date | string
@@ -817,6 +864,7 @@ export type FormSubmissionCreateManyFormTypeInput = {
 }
 
 export type FormSubmissionUpdateWithoutFormTypeInput = {
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumFormStatusFieldUpdateOperationsInput | $Enums.FormStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -828,6 +876,7 @@ export type FormSubmissionUpdateWithoutFormTypeInput = {
 
 export type FormSubmissionUncheckedUpdateWithoutFormTypeInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumFormStatusFieldUpdateOperationsInput | $Enums.FormStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -839,6 +888,7 @@ export type FormSubmissionUncheckedUpdateWithoutFormTypeInput = {
 
 export type FormSubmissionUncheckedUpdateManyWithoutFormTypeInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  referenceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumFormStatusFieldUpdateOperationsInput | $Enums.FormStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -888,6 +938,7 @@ export type FormSubmissionCountOutputTypeCountAttachmentsArgs<ExtArgs extends ru
 
 export type FormSubmissionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  referenceId?: boolean
   formTypeId?: boolean
   createdById?: boolean
   status?: boolean
@@ -905,6 +956,7 @@ export type FormSubmissionSelect<ExtArgs extends runtime.Types.Extensions.Intern
 
 export type FormSubmissionSelectScalar = {
   id?: boolean
+  referenceId?: boolean
   formTypeId?: boolean
   createdById?: boolean
   status?: boolean
@@ -913,7 +965,7 @@ export type FormSubmissionSelectScalar = {
   formData?: boolean
 }
 
-export type FormSubmissionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "formTypeId" | "createdById" | "status" | "createdAt" | "updatedAt" | "formData", ExtArgs["result"]["formSubmission"]>
+export type FormSubmissionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "referenceId" | "formTypeId" | "createdById" | "status" | "createdAt" | "updatedAt" | "formData", ExtArgs["result"]["formSubmission"]>
 export type FormSubmissionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   formType?: boolean | Prisma.FormTypeDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -932,6 +984,7 @@ export type $FormSubmissionPayload<ExtArgs extends runtime.Types.Extensions.Inte
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
+    referenceId: string | null
     formTypeId: number
     createdById: number
     status: $Enums.FormStatus
@@ -1312,6 +1365,7 @@ export interface Prisma__FormSubmissionClient<T, Null = never, ExtArgs extends r
  */
 export interface FormSubmissionFieldRefs {
   readonly id: Prisma.FieldRef<"FormSubmission", 'Int'>
+  readonly referenceId: Prisma.FieldRef<"FormSubmission", 'String'>
   readonly formTypeId: Prisma.FieldRef<"FormSubmission", 'Int'>
   readonly createdById: Prisma.FieldRef<"FormSubmission", 'Int'>
   readonly status: Prisma.FieldRef<"FormSubmission", 'FormStatus'>

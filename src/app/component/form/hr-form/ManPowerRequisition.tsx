@@ -1134,7 +1134,7 @@ export default function ManPower({
                 >
                   <span className="truncate">
                     {files.length > 0
-                      ? `${files.length} file(s) selected`
+                      ? `${files.length} file(s) attached — click to add another`
                       : "Choose a file or drag & drop"}
                   </span>
                   <span
@@ -1149,15 +1149,13 @@ export default function ManPower({
                     name="fileAttachment"
                     className="hidden"
                     onChange={(e) => {
-                      const selectedFiles = Array.from(e.target.files || []);
-                      const validationError = validateFiles(selectedFiles);
+                      const newFile = e.target.files?.[0];
+                      if (!newFile) return;
+
+                      const combinedFiles = [...files, newFile];
+                      const validationError = validateFiles(combinedFiles);
 
                       if (validationError) {
-                        setFiles([]);
-                        setData((prev) => ({
-                          ...prev,
-                          fileAttachment: null,
-                        }));
                         setErrors((prev) => ({
                           ...prev,
                           fileAttachment: validationError,
@@ -1167,7 +1165,7 @@ export default function ManPower({
                         return;
                       }
 
-                      setFiles(selectedFiles);
+                      setFiles(combinedFiles);
                       setErrors((prev) => ({
                         ...prev,
                         fileAttachment: undefined,
@@ -1175,10 +1173,10 @@ export default function ManPower({
 
                       setData((prev) => ({
                         ...prev,
-                        fileAttachment: selectedFiles,
+                        fileAttachment: combinedFiles,
                       }));
+                      e.target.value = "";
                     }}
-                    multiple
                     disabled={readOnly}
                   />
                 </label>
@@ -1186,7 +1184,25 @@ export default function ManPower({
                 {files.length > 0 && (
                   <div className="mt-1 w-full rounded-lg bg-gray-50 dark:bg-gray-800 p-3 text-xs text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700">
                     {files.map((f, i) => (
-                      <p key={i}>📎 {f.name}</p>
+                      <div key={i} className="flex items-center justify-between py-0.5">
+                        <p className="truncate">📎 {f.name}</p>
+                        {!readOnly && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updatedFiles = files.filter((_, idx) => idx !== i);
+                              setFiles(updatedFiles);
+                              setData((prev) => ({
+                                ...prev,
+                                fileAttachment: updatedFiles.length > 0 ? updatedFiles : null,
+                              }));
+                            }}
+                            className="ml-2 shrink-0 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}

@@ -169,6 +169,7 @@ export type FormTypeScalarFieldEnum = (typeof FormTypeScalarFieldEnum)[keyof typ
 
 export const FormSubmissionScalarFieldEnum = {
   id: 'id',
+  referenceId: 'referenceId',
   formTypeId: 'formTypeId',
   createdById: 'createdById',
   status: 'status',
@@ -388,6 +389,13 @@ export const QueryMode = {
 } as const
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const FormSubmissionOrderByRelevanceFieldEnum = {
+  referenceId: 'referenceId'
+} as const
+
+export type FormSubmissionOrderByRelevanceFieldEnum = (typeof FormSubmissionOrderByRelevanceFieldEnum)[keyof typeof FormSubmissionOrderByRelevanceFieldEnum]
 
 
 export const FileAttachmentOrderByRelevanceFieldEnum = {

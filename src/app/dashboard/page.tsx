@@ -22,7 +22,6 @@ export default async function DashboardPage() {
   }
 
   const [
-    countPendingForms,
     countApprovedForms,
     totalForms,
     totalMembers,
@@ -31,9 +30,6 @@ export default async function DashboardPage() {
     recentReviewed,
     recentOwnForms,
   ] = await Promise.all([
-    prisma.formSubmission.count({
-      where: { status: "PENDING", createdById: findUser.id },
-    }),
     prisma.formSubmission.count({
       where: { status: "APPROVED", createdById: findUser.id },
     }),
@@ -111,7 +107,6 @@ export default async function DashboardPage() {
 
   return (
     <DashboardComponent
-      countPendingForms={countPendingForms}
       countApprovedForms={countApprovedForms}
       totalForms={totalForms}
       totalMembers={totalMembers}
