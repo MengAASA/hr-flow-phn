@@ -9,7 +9,7 @@ const webLink = process.env.NEXTAUTH_URL;
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email } = body;
+    const email = typeof body.email === "string" ? body.email.trim() : "";
 
     if (!email) {
       return NextResponse.json({ error: "Email is missing" }, { status: 400 });
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     if (!finduser) {
       return NextResponse.json(
-        { error: "Email does not exist" },
+        { error: "No account is registered with this email address." },
         { status: 400 }
       );
     }
@@ -52,15 +52,23 @@ export async function POST(req: NextRequest) {
       },
     };
 
-    await transporter.sendMail(mailOptions);
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error("[forget-password] Failed to send reset email:", error);
+      return NextResponse.json(
+        { error: "Unable to send the reset email right now. Please try again later." },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json({
       message: "Reset password link has been successfully sent.",
     });
   } catch (error) {
-    console.error(error);
+    console.error("[forget-password] Request failed:", error);
     return NextResponse.json(
-      { error: error || "Internal Server Error" },
+      { error: "Something went wrong. Please try again later." },
       { status: 500 }
     );
   }

@@ -5,6 +5,11 @@ import { prisma } from "../../lib/prisma";
 import { withBasePath } from "../../lib/base-path";
 import { flattenRoles } from "./admin-roles";
 
+// Error codes returned to the client via signIn()'s `error`; the login page
+// matches on these strings.
+const INVALID_CREDENTIALS = "INVALID_CREDENTIALS";
+const SIGNIN_SERVER_ERROR = "SIGNIN_SERVER_ERROR";
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -14,16 +19,24 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.staffid || !credentials.password) {
-          throw new Error("Please enter both staff ID and password.");
+        const staffid = credentials?.staffid?.trim().toUpperCase();
+
+        if (!staffid || !credentials?.password) {
+          throw new Error(INVALID_CREDENTIALS);
         }
 
-        const user = await prisma.user.findUnique({
-          where: { staffid: credentials.staffid },
-        });
+        // A DB/connection failure must not be reported to the user as a wrong
+        // password, so log it and surface a distinct error code instead.
+        let user;
+        try {
+          user = await prisma.user.findUnique({ where: { staffid } });
+        } catch (error) {
+          console.error("[auth] Failed to look up user during sign-in:", error);
+          throw new Error(SIGNIN_SERVER_ERROR);
+        }
 
         if (!user) {
-          throw new Error("No user found with that staff ID.");
+          throw new Error(INVALID_CREDENTIALS);
         }
 
         const passwordIsValid = await compare(
@@ -32,7 +45,7 @@ export const authOptions: NextAuthOptions = {
         );
 
         if (!passwordIsValid) {
-          throw new Error("Invalid password.");
+          throw new Error(INVALID_CREDENTIALS);
         }
 
         return {

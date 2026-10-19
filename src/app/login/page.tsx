@@ -32,8 +32,13 @@ export default function Login() {
         password: values.password,
       });
 
-      if (res?.error) {
+      if (res?.error === "INVALID_CREDENTIALS") {
         toast.error("Invalid Staff id or password!", { id: toastId });
+      } else if (res?.error) {
+        console.error("Sign-in failed:", res.error);
+        toast.error("Unable to sign in right now. Please try again.", {
+          id: toastId,
+        });
       } else {
         toast.success("Login successful", { id: toastId });
       }
@@ -54,7 +59,11 @@ export default function Login() {
       }
     } catch (error) {
       console.error("Failed to send password reset:", error);
-      toast.error("Failed Request. Please contact an admin!");
+      const message =
+        axios.isAxiosError(error) && typeof error.response?.data?.error === "string"
+          ? error.response.data.error
+          : "Failed Request. Please contact an admin!";
+      toast.error(message);
     }
   };
 
