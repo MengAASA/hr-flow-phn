@@ -72,12 +72,10 @@ export default function HrFormsClient({
   forms,
   selectedId,
   selectedName,
-  approvals,
 }: {
   forms: FormType[];
   selectedId: number | null;
   selectedName: string | null;
-  approvals: ApprovalWithApprover[];
 }) {
   const [selectedFormName, setSelectedFormName] = useState<string | null>(
     selectedName,
@@ -254,7 +252,6 @@ export default function HrFormsClient({
               setSelectedWorkLocation={setSelectedWorkLocation}
               user={user}
               onSubmitSuccess={() => setSelectedFormName(null)}
-              approvals={approvals}
             />
           </motion.div>
         )}

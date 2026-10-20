@@ -18,8 +18,11 @@ export default async function Approval() {
     return <p>User not logged in</p>;
   }
 
+  // Password hashes are omitted from every user record below: this page's
+  // data is serialised to the browser and nothing there reads them.
   const user = await prisma.user.findUnique({
     where: { staffid },
+    omit: { password: true },
     include: { department: true },
   });
 
@@ -27,7 +30,9 @@ export default async function Approval() {
     return <p>User not found</p>;
   }
 
-  const [pendingApprovals, selfFormsRaw] = await Promise.all([
+  // The officer check doesn't depend on the approval queries, so it runs
+  // alongside them instead of after.
+  const [pendingApprovals, selfFormsRaw, officer] = await Promise.all([
     prisma.approval.findMany({
       where: {
         approverId: user.id,
@@ -36,7 +41,7 @@ export default async function Approval() {
       include: {
         submission: {
           include: {
-            createdBy: { include: { department: true } },
+            createdBy: { omit: { password: true }, include: { department: true } },
             formType: true,
             approvals: {
               orderBy: { stepOrder: "asc" },
@@ -60,6 +65,7 @@ export default async function Approval() {
         createdAt: "desc",
       },
     }),
+    canAccessHarassmentReports(staffid, session.user.roles),
   ]);
 
   const approvalsWithLevels = pendingApprovals.map(
@@ -107,7 +113,6 @@ export default async function Approval() {
         : form.formData,
   }));
 
-  const officer = await canAccessHarassmentReports(staffid, session.user.roles);
   const [sexualHarassmentReports, sexualHarassmentReportsHistory] = officer
     ? await Promise.all([
         prisma.sexualHarassmentReport.findMany({

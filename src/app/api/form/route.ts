@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import fs from "fs/promises";
 import path from "path";
-import { transporter } from "../../../../lib/emailService";
+import { sendMailSafely } from "../../../../lib/emailService";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/src/lib/auth-options";
 import { ApprovalStepApprover, User } from "@/generated/client";
@@ -320,11 +320,11 @@ export async function POST(req: NextRequest) {
       },
     };
 
-    try {
-      await transporter.sendMail(mailOptions);
-    } catch (mailErr) {
-      console.error("Failed to send submission confirmation email:", mailErr);
-    }
+    // The two emails are independent; send them together instead of making the
+    // requester wait for one SMTP round trip after the other.
+    const mailSends = [
+      sendMailSafely(mailOptions, "Failed to send submission confirmation email:"),
+    ];
 
     // ✅ Updated email logic: First approver in TO, others in CC
     if (firstStepApprovers.length > 0) {
@@ -353,12 +353,12 @@ export async function POST(req: NextRequest) {
         },
       };
 
-      try {
-        await transporter.sendMail(approvalMail);
-      } catch (mailErr) {
-        console.error("Failed to send approver notification email:", mailErr);
-      }
+      mailSends.push(
+        sendMailSafely(approvalMail, "Failed to send approver notification email:"),
+      );
     }
+
+    await Promise.all(mailSends);
 
     return NextResponse.json(
       {
@@ -378,57 +378,47 @@ export async function GET() {
     const scope = await requireAdminScope();
     if (scope.denied) return scope.denied;
 
-    // Fetch form submissions with createdBy and approvals
-    const submissions = await prisma.formSubmission.findMany({
-      where: scopedSubmissionWhere(scope.formTypeIds),
-      include: {
-        attachments: true,
-        createdBy: true,
-        formType: true,
-        approvals: {
-          include: {
-            approver: true,
+    // Fetch form submissions with createdBy and approvals, plus the org-unit
+    // tables once — resolving names per submission meant up to three queries
+    // for every row.
+    const [submissions, divisions, departments, sections] = await Promise.all([
+      prisma.formSubmission.findMany({
+        where: scopedSubmissionWhere(scope.formTypeIds),
+        include: {
+          attachments: true,
+          createdBy: { omit: { password: true } },
+          formType: true,
+          approvals: {
+            include: {
+              approver: { omit: { password: true } },
+            },
           },
         },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.division.findMany({ select: { id: true, name: true } }),
+      prisma.department.findMany({ select: { id: true, name: true } }),
+      prisma.section.findMany({ select: { id: true, name: true } }),
+    ]);
+
+    const divisionName = new Map(divisions.map((d) => [d.id, d.name]));
+    const departmentName = new Map(departments.map((d) => [d.id, d.name]));
+    const sectionName = new Map(sections.map((s) => [s.id, s.name]));
 
     // Map to flatten division, department, section names
-    const mapped = await Promise.all(
-      submissions.map(async (sub: (typeof submissions)[number]) => {
-        const parsedFormData: FormData =
-          typeof sub.formData === "string"
-            ? JSON.parse(sub.formData)
-            : (sub.formData as FormData);
+    const mapped = submissions.map((sub: (typeof submissions)[number]) => {
+      const parsedFormData: FormData =
+        typeof sub.formData === "string"
+          ? JSON.parse(sub.formData)
+          : (sub.formData as FormData);
 
-        // Fetch related names
-        const [division, department, section] = await Promise.all([
-          Number(parsedFormData.division)
-            ? prisma.division.findUnique({
-                where: { id: Number(parsedFormData.division) },
-              })
-            : null,
-          Number(parsedFormData.department)
-            ? prisma.department.findUnique({
-                where: { id: Number(parsedFormData.department) },
-              })
-            : null,
-          Number(parsedFormData.section)
-            ? prisma.section.findUnique({
-                where: { id: Number(parsedFormData.section) },
-              })
-            : null,
-        ]);
-
-        return {
-          ...sub,
-          departmentName: department?.name || null,
-          divisionName: division?.name || null,
-          sectionName: section?.name || null,
-        };
-      }),
-    );
+      return {
+        ...sub,
+        departmentName: departmentName.get(Number(parsedFormData.department)) || null,
+        divisionName: divisionName.get(Number(parsedFormData.division)) || null,
+        sectionName: sectionName.get(Number(parsedFormData.section)) || null,
+      };
+    });
 
     return NextResponse.json(mapped);
   } catch (error) {

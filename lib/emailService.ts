@@ -9,6 +9,11 @@ const realTransporter = nodemailer.createTransport({
   host: "smtp.office365.com",
   port: 587,
   secure: false, // Set to false for TLS, which works with port 587
+  // Reuse authenticated SMTP connections instead of a fresh TLS handshake and
+  // login per email. Capped at 3, Office 365's concurrent-connection limit
+  // per mailbox.
+  pool: true,
+  maxConnections: 3,
   auth: {
     user: email,
     pass,
@@ -54,3 +59,18 @@ export const transporter = isProduction
         return { messageId: "dev-skip" };
       },
     };
+
+// Sends one email and logs, rather than throws, on failure — for notifications
+// that must never fail the request that triggered them. Returning a promise
+// lets independent emails go out together via Promise.all.
+export function sendMailSafely(
+  mailOptions: SendMailOptions,
+  failureMessage: string,
+): Promise<void> {
+  return transporter.sendMail(mailOptions).then(
+    () => undefined,
+    (mailErr) => {
+      console.error(failureMessage, mailErr);
+    },
+  );
+}

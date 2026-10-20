@@ -13,7 +13,6 @@ import { PiChalkboardSimpleLight } from "react-icons/pi";
 import { CiLock } from "react-icons/ci";
 import { FaChevronDown, FaUserCircle } from "react-icons/fa";
 import { UserType } from "@/app/types/types";
-import { useSession } from "next-auth/react";
 import {
   TbBrandGoogleAnalytics,
   TbChartBar,
@@ -21,8 +20,6 @@ import {
   TbTrendingUp,
 } from "react-icons/tb";
 import { GrUserWorker } from "react-icons/gr";
-import axios from "axios";
-import { withBasePath } from "@/lib/base-path";
 import { canViewAnalytics } from "@/lib/analytics-access";
 import { isAdminRole } from "@/src/lib/admin-roles";
 import { getFirstName } from "../../../../lib/utils";
@@ -31,6 +28,9 @@ interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
   isMobile: boolean;
+  // Loaded once by the dashboard layout and shared with the navbar, rather
+  // than fetched again here.
+  user?: UserType | null;
 }
 
 function formatRole(role?: string) {
@@ -86,36 +86,17 @@ export default function Sidebar({
   isOpen,
   toggleSidebar,
   isMobile,
+  user,
 }: SidebarProps) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-  const [user, setUser] = useState<UserType>();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [tooltip, setTooltip] = useState<{ label: string; top: number } | null>(null);
-  const { data: session } = useSession();
 
   useEffect(() => setMounted(true), []);
 
   const toggleGroup = (name: string) =>
     setOpenGroups((prev) => ({ ...prev, [name]: !prev[name] }));
-
-  useEffect(() => {
-    if (!session) return;
-
-    const fetchUser = async () => {
-      try {
-        const res = await axios.get(
-          withBasePath(`/api/user/${session.user.staffid}`),
-        );
-        const user = res.data.data;
-        setUser(user);
-      } catch (err) {
-        console.error("Error fetching user:", err);
-      }
-    };
-
-    fetchUser();
-  }, [session]);
 
   const showAnalytics = canViewAnalytics(user?.roles);
 

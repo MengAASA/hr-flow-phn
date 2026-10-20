@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../../lib/prisma";
 import fs from "fs/promises";
 import path from "path";
-import { transporter } from "../../../../../lib/emailService";
+import { sendMailSafely } from "../../../../../lib/emailService";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/src/lib/auth-options";
 import { User } from "@/generated/client";
@@ -271,11 +271,10 @@ export async function POST(req: NextRequest) {
       },
     };
 
-    try {
-      await transporter.sendMail(mailOptions);
-    } catch (mailErr) {
-      console.error("Failed to send submission confirmation email:", mailErr);
-    }
+    // Independent emails — send together rather than one after the other.
+    const mailSends = [
+      sendMailSafely(mailOptions, "Failed to send submission confirmation email:"),
+    ];
 
     if (firstStepApprovers.length > 0) {
       const [firstApprover, ...otherApprovers] = firstStepApprovers;
@@ -302,12 +301,12 @@ export async function POST(req: NextRequest) {
         },
       };
 
-      try {
-        await transporter.sendMail(approvalMail);
-      } catch (mailErr) {
-        console.error("Failed to send approver notification email:", mailErr);
-      }
+      mailSends.push(
+        sendMailSafely(approvalMail, "Failed to send approver notification email:"),
+      );
     }
+
+    await Promise.all(mailSends);
 
     return NextResponse.json(
       {

@@ -36,21 +36,19 @@ export default async function ProfilePage() {
     );
   }
 
-  const [totalSubmitted, totalPending, totalApproved, totalRejected] =
-    await Promise.all([
-      prisma.formSubmission.count({
-        where: { createdById: getUser.id },
-      }),
-      prisma.formSubmission.count({
-        where: { createdById: getUser.id, status: "PENDING" },
-      }),
-      prisma.formSubmission.count({
-        where: { createdById: getUser.id, status: "APPROVED" },
-      }),
-      prisma.formSubmission.count({
-        where: { createdById: getUser.id, status: "REJECTED" },
-      }),
-    ]);
+  // One grouped count instead of four separate queries over the same rows.
+  const statusCounts = await prisma.formSubmission.groupBy({
+    by: ["status"],
+    where: { createdById: getUser.id },
+    _count: { _all: true },
+  });
+  const countFor = (status: string) =>
+    statusCounts.find((s) => s.status === status)?._count._all ?? 0;
+
+  const totalSubmitted = statusCounts.reduce((sum, s) => sum + s._count._all, 0);
+  const totalPending = countFor("PENDING");
+  const totalApproved = countFor("APPROVED");
+  const totalRejected = countFor("REJECTED");
 
   const stats = [
     {

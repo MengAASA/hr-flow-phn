@@ -48,65 +48,80 @@ export default async function Admin() {
   // independently of this flag.
   const isFullAdmin = session.user?.roles?.includes("ADMIN") ?? false;
 
-  const userListing = await prisma.user.findMany({
-    include: {
-      division: true,
-      department: true,
-      section: true,
-      formTypeScopes: { select: { formTypeId: true } },
-    },
-  });
-
-  // flowSteps only matters to the Form Create tab, which none but a full admin
-  // sees — everyone else gets the bare form types the user form needs.
-  const formType = isFullAdmin
-    ? await prisma.formType.findMany({
-        include: {
-          flowSteps: true,
-        },
-      })
-    : await prisma.formType.findMany();
-
-  const approvalFlow = !isFullAdmin
-    ? []
-    : (
-    await prisma.approvalFlowStep.findMany({
+  // The queries below are independent, so run them together rather than one
+  // round trip after another. Password hashes are omitted from every user
+  // record: this data is serialised to the browser and nothing there reads it.
+  const [
+    userListing,
+    formType,
+    approvalFlowSteps,
+    formSubmission,
+    divisions,
+    departments,
+    sections,
+  ] = await Promise.all([
+    prisma.user.findMany({
+      omit: { password: true },
       include: {
-        formType: true,
         division: true,
         department: true,
         section: true,
-        approvalStepApprovers: {
+        formTypeScopes: { select: { formTypeId: true } },
+      },
+    }),
+    // flowSteps only matters to the Form Create tab, which none but a full
+    // admin sees — everyone else gets the bare form types the user form needs.
+    isFullAdmin
+      ? prisma.formType.findMany({
           include: {
-            user: true,
+            flowSteps: true,
+          },
+        })
+      : prisma.formType.findMany(),
+    !isFullAdmin
+      ? Promise.resolve([])
+      : prisma.approvalFlowStep.findMany({
+          include: {
+            formType: true,
+            division: true,
+            department: true,
+            section: true,
+            approvalStepApprovers: {
+              include: {
+                user: { omit: { password: true } },
+              },
+            },
+          },
+        }),
+    prisma.formSubmission.findMany({
+      where: scopedSubmissionWhere(scopedFormTypeIds),
+      include: {
+        attachments: true,
+        createdBy: { omit: { password: true } },
+        formType: true,
+        approvals: {
+          include: {
+            approver: { omit: { password: true } },
           },
         },
       },
-    })
-  ).map((step) => ({
+    }),
+    prisma.division.findMany(),
+    prisma.department.findMany(),
+    prisma.section.findMany(),
+  ]);
+
+  const approvalFlow = approvalFlowSteps.map((step) => ({
     ...step,
     division: step.division ?? undefined,
     department: step.department ?? undefined,
     section: step.section ?? undefined,
   }));
 
-  const formSubmission = await prisma.formSubmission.findMany({
-    where: scopedSubmissionWhere(scopedFormTypeIds),
-    include: {
-      attachments: true,
-      createdBy: true,
-      formType: true,
-      approvals: {
-        include: {
-          approver: true,
-        },
-      },
-    },
-  });
-
-  const divisions = await prisma.division.findMany();
-  const departments = await prisma.department.findMany();
-  const sections = await prisma.section.findMany();
+  // Id → name lookups for the per-submission enrichment below.
+  const divisionById = new Map(divisions.map((d) => [d.id, d]));
+  const departmentById = new Map(departments.map((d) => [d.id, d]));
+  const sectionById = new Map(sections.map((s) => [s.id, s]));
 
   // Harassment reports are not surfaced here. They live behind
   // /dashboard/compliance, which admits designated compliance officers only.
@@ -115,7 +130,7 @@ export default async function Admin() {
   const enrichedSubmissions: SelfFormData[] = formSubmission.map(
     (
       sub: FormSubmission & {
-        createdBy: User;
+        createdBy: Omit<User, "password">;
         attachments: FileAttachment[];
         approvals: Approval[];
         formType: FormType;
@@ -126,17 +141,9 @@ export default async function Admin() {
           ? JSON.parse(sub.formData)
           : (sub.formData as FormData);
 
-      const division = divisions.find(
-        (d) => d.id === Number(parsedFormData?.division),
-      );
-
-      const department = departments.find(
-        (d) => d.id === Number(parsedFormData?.department),
-      );
-
-      const section = sections.find(
-        (s) => s.id === Number(parsedFormData?.section),
-      );
+      const division = divisionById.get(Number(parsedFormData?.division));
+      const department = departmentById.get(Number(parsedFormData?.department));
+      const section = sectionById.get(Number(parsedFormData?.section));
 
       return {
         ...sub,

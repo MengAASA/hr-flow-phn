@@ -3,7 +3,15 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { withBasePath } from "@/lib/base-path";
 import { IoClose } from "react-icons/io5";
-import * as XLSX from "xlsx";
+import type * as XlsxModule from "xlsx";
+
+// xlsx is large and only needed when someone uploads a workbook or downloads
+// the template, so it is loaded on first use instead of with the page.
+let xlsx: typeof XlsxModule | null = null;
+async function loadXlsx(): Promise<typeof XlsxModule> {
+  xlsx ??= await import("xlsx");
+  return xlsx;
+}
 
 export function ChartContainer({
   className,
@@ -279,8 +287,9 @@ export function normalizeExcelDate(value: unknown) {
     return `${value.getMonth() + 1}/${value.getDate()}/${value.getFullYear()}`;
   }
 
-  if (typeof value === "number") {
-    const parsedDate = XLSX.SSF.parse_date_code(value);
+  // Only reached while parsing an upload, by which point loadXlsx() has run.
+  if (typeof value === "number" && xlsx) {
+    const parsedDate = xlsx.SSF.parse_date_code(value);
 
     if (parsedDate) {
       return `${parsedDate.m}/${parsedDate.d}/${parsedDate.y}`;
@@ -507,7 +516,7 @@ export function useManpowerEmployees(
       setIsUploading(true);
       setUploadMessage(`Reading ${file.name} and saving it to the database...`);
 
-      const buffer = await file.arrayBuffer();
+      const [buffer, XLSX] = await Promise.all([file.arrayBuffer(), loadXlsx()]);
       const workbook = XLSX.read(buffer, { type: "array" });
       const firstSheetName = workbook.SheetNames[0];
 
@@ -619,7 +628,8 @@ const manpowerTemplateSampleRow = [
   "",
 ];
 
-export function downloadManpowerTemplate() {
+export async function downloadManpowerTemplate() {
+  const XLSX = await loadXlsx();
   const worksheet = XLSX.utils.aoa_to_sheet([
     manpowerTemplateHeaders,
     manpowerTemplateSampleRow,

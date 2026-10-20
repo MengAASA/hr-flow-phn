@@ -7,16 +7,20 @@ export async function POST(req: NextRequest) {
     if (denied) return denied;
     const { steps } = await req.json();
 
-    for (const step of steps) {
-      await prisma.approvalFlowStep.updateMany({
-        where: {
-          id: step.id,
-        },
-        data: {
-          order: step.order,
-        },
-      });
-    }
+    // One transaction instead of a round trip per step — and a failure part
+    // way through no longer leaves the flow half reordered.
+    await prisma.$transaction(
+      (steps as { id: number; order: number }[]).map((step) =>
+        prisma.approvalFlowStep.updateMany({
+          where: {
+            id: step.id,
+          },
+          data: {
+            order: step.order,
+          },
+        }),
+      ),
+    );
 
     return NextResponse.json(
       { message: "Successfully Updated" },

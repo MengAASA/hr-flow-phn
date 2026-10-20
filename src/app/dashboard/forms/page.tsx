@@ -23,13 +23,6 @@ export default async function Forms(props: {
   const id = searchParams.id ? Number(searchParams.id) : null;
   const name = searchParams.name ?? null;
 
-  const approvals = await prisma.approval.findMany({
-    include: {
-      approver: true,
-    }
-  });
-
-
-  return <HrFormsClient forms={forms} selectedId={id} selectedName={name} approvals={approvals}/>;
+  return <HrFormsClient forms={forms} selectedId={id} selectedName={name} />;
 }
 

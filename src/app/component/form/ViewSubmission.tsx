@@ -17,7 +17,6 @@ import {
 } from "@/app/types/types";
 import { FormStatus } from "@/generated/client";
 import { sanitizeName } from "../../../../lib/utils";
-import { downloadFormPDF } from "../../../../lib/pdfDownloader";
 import { HrFormComponents } from "../../../../lib/hrformcomponents";
 import { withBasePath } from "@/lib/base-path";
 
@@ -282,7 +281,9 @@ export default function ViewSubmission({
 
           <PrimaryButton
             name="Download PDF"
-            onClick={() =>
+            // jsPDF is large; load it on first click instead of with the page.
+            onClick={async () => {
+              const { downloadFormPDF } = await import("../../../../lib/pdfDownloader");
               downloadFormPDF({
                 formTypeId: form.formTypeId,
                 formType: form.formType.name,
@@ -292,8 +293,8 @@ export default function ViewSubmission({
                 sectionName: form.sectionName ?? "",
                 createdBy: form.createdBy,
                 approvals: mappedApprovals,
-              })
-            }
+              });
+            }}
             className="bg-purple-700 text-white px-3 py-2 text-xs rounded-sm hover:bg-purple-900 cursor-pointer"
             icon={<MdOutlineFileDownload className="w-5 h-5" />}
           />

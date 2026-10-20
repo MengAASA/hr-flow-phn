@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../../lib/prisma";
-import { transporter } from "../../../../../lib/emailService";
+import { sendMailSafely } from "../../../../../lib/emailService";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/src/lib/auth-options";
 import { Prisma, User } from "@/generated/client";
@@ -161,7 +161,10 @@ export async function POST(req: NextRequest) {
         isApprover: false,
       },
     };
-    try { await transporter.sendMail(submitterMail); } catch { /* non-fatal */ }
+    // Independent emails — send together rather than one after the other.
+    const mailSends = [
+      sendMailSafely(submitterMail, "Failed to send employee review confirmation email:"),
+    ];
 
     // ── Email HOD + HoDiv: first TO, rest CC ──
     if (firstStepApprovals.length > 0) {
@@ -185,8 +188,12 @@ export async function POST(req: NextRequest) {
           isApprover: true,
         },
       };
-      try { await transporter.sendMail(approverMail); } catch { /* non-fatal */ }
+      mailSends.push(
+        sendMailSafely(approverMail, "Failed to send employee review approver email:"),
+      );
     }
+
+    await Promise.all(mailSends);
 
     return NextResponse.json(
       { message: "Form submitted successfully", data: formSubmission },

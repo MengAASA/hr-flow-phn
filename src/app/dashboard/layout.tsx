@@ -71,6 +71,7 @@ export default function DashboardLayout({
           isOpen={isSidebarOpen}
           toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           isMobile={isMobile}
+          user={user}
         />
 
         {isMobile && isSidebarOpen && (
