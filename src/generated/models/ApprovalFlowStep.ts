@@ -286,7 +286,7 @@ export type ApprovalFlowStepGroupByOutputType = {
   _max: ApprovalFlowStepMaxAggregateOutputType | null
 }
 
-type GetApprovalFlowStepGroupByPayload<T extends ApprovalFlowStepGroupByArgs> = Prisma.PrismaPromise<
+export type GetApprovalFlowStepGroupByPayload<T extends ApprovalFlowStepGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<ApprovalFlowStepGroupByOutputType, T['by']> &
       {
@@ -2337,6 +2337,11 @@ export type ApprovalFlowStepFindManyArgs<ExtArgs extends runtime.Types.Extension
    * Skip the first `n` ApprovalFlowSteps.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of ApprovalFlowSteps.
+   */
   distinct?: Prisma.ApprovalFlowStepScalarFieldEnum | Prisma.ApprovalFlowStepScalarFieldEnum[]
 }
 

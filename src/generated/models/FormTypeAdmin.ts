@@ -193,7 +193,7 @@ export type FormTypeAdminGroupByOutputType = {
   _max: FormTypeAdminMaxAggregateOutputType | null
 }
 
-type GetFormTypeAdminGroupByPayload<T extends FormTypeAdminGroupByArgs> = Prisma.PrismaPromise<
+export type GetFormTypeAdminGroupByPayload<T extends FormTypeAdminGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<FormTypeAdminGroupByOutputType, T['by']> &
       {
@@ -1178,6 +1178,11 @@ export type FormTypeAdminFindManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Skip the first `n` FormTypeAdmins.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of FormTypeAdmins.
+   */
   distinct?: Prisma.FormTypeAdminScalarFieldEnum | Prisma.FormTypeAdminScalarFieldEnum[]
 }
 

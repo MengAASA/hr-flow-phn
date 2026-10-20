@@ -311,7 +311,7 @@ export type SexualHarassmentReportGroupByOutputType = {
   _max: SexualHarassmentReportMaxAggregateOutputType | null
 }
 
-type GetSexualHarassmentReportGroupByPayload<T extends SexualHarassmentReportGroupByArgs> = Prisma.PrismaPromise<
+export type GetSexualHarassmentReportGroupByPayload<T extends SexualHarassmentReportGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<SexualHarassmentReportGroupByOutputType, T['by']> &
       {
@@ -1578,6 +1578,11 @@ export type SexualHarassmentReportFindManyArgs<ExtArgs extends runtime.Types.Ext
    * Skip the first `n` SexualHarassmentReports.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of SexualHarassmentReports.
+   */
   distinct?: Prisma.SexualHarassmentReportScalarFieldEnum | Prisma.SexualHarassmentReportScalarFieldEnum[]
 }
 

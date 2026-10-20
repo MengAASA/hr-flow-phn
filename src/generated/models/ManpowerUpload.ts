@@ -257,7 +257,7 @@ export type ManpowerUploadGroupByOutputType = {
   _max: ManpowerUploadMaxAggregateOutputType | null
 }
 
-type GetManpowerUploadGroupByPayload<T extends ManpowerUploadGroupByArgs> = Prisma.PrismaPromise<
+export type GetManpowerUploadGroupByPayload<T extends ManpowerUploadGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<ManpowerUploadGroupByOutputType, T['by']> &
       {
@@ -1357,6 +1357,11 @@ export type ManpowerUploadFindManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Skip the first `n` ManpowerUploads.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of ManpowerUploads.
+   */
   distinct?: Prisma.ManpowerUploadScalarFieldEnum | Prisma.ManpowerUploadScalarFieldEnum[]
 }
 
