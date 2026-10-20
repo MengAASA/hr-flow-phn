@@ -40,6 +40,7 @@ export type SectionMinAggregateOutputType = {
   id: number | null
   name: string | null
   departmentId: number | null
+  isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -48,6 +49,7 @@ export type SectionMaxAggregateOutputType = {
   id: number | null
   name: string | null
   departmentId: number | null
+  isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +58,7 @@ export type SectionCountAggregateOutputType = {
   id: number
   name: number
   departmentId: number
+  isActive: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -76,6 +79,7 @@ export type SectionMinAggregateInputType = {
   id?: true
   name?: true
   departmentId?: true
+  isActive?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -84,6 +88,7 @@ export type SectionMaxAggregateInputType = {
   id?: true
   name?: true
   departmentId?: true
+  isActive?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -92,6 +97,7 @@ export type SectionCountAggregateInputType = {
   id?: true
   name?: true
   departmentId?: true
+  isActive?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -187,6 +193,7 @@ export type SectionGroupByOutputType = {
   id: number
   name: string
   departmentId: number
+  isActive: boolean
   createdAt: Date
   updatedAt: Date
   _count: SectionCountAggregateOutputType | null
@@ -218,6 +225,7 @@ export type SectionWhereInput = {
   id?: Prisma.IntFilter<"Section"> | number
   name?: Prisma.StringFilter<"Section"> | string
   departmentId?: Prisma.IntFilter<"Section"> | number
+  isActive?: Prisma.BoolFilter<"Section"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Section"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Section"> | Date | string
   department?: Prisma.XOR<Prisma.DepartmentScalarRelationFilter, Prisma.DepartmentWhereInput>
@@ -229,6 +237,7 @@ export type SectionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   department?: Prisma.DepartmentOrderByWithRelationInput
@@ -244,6 +253,7 @@ export type SectionWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.SectionWhereInput | Prisma.SectionWhereInput[]
   name?: Prisma.StringFilter<"Section"> | string
   departmentId?: Prisma.IntFilter<"Section"> | number
+  isActive?: Prisma.BoolFilter<"Section"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Section"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Section"> | Date | string
   department?: Prisma.XOR<Prisma.DepartmentScalarRelationFilter, Prisma.DepartmentWhereInput>
@@ -255,6 +265,7 @@ export type SectionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SectionCountOrderByAggregateInput
@@ -271,12 +282,14 @@ export type SectionScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"Section"> | number
   name?: Prisma.StringWithAggregatesFilter<"Section"> | string
   departmentId?: Prisma.IntWithAggregatesFilter<"Section"> | number
+  isActive?: Prisma.BoolWithAggregatesFilter<"Section"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Section"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Section"> | Date | string
 }
 
 export type SectionCreateInput = {
   name: string
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   department: Prisma.DepartmentCreateNestedOneWithoutSectionsInput
@@ -288,6 +301,7 @@ export type SectionUncheckedCreateInput = {
   id?: number
   name: string
   departmentId: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutSectionInput
@@ -296,6 +310,7 @@ export type SectionUncheckedCreateInput = {
 
 export type SectionUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   department?: Prisma.DepartmentUpdateOneRequiredWithoutSectionsNestedInput
@@ -307,6 +322,7 @@ export type SectionUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   departmentId?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutSectionNestedInput
@@ -317,12 +333,14 @@ export type SectionCreateManyInput = {
   id?: number
   name: string
   departmentId: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type SectionUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -331,6 +349,7 @@ export type SectionUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   departmentId?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -360,6 +379,7 @@ export type SectionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -373,6 +393,7 @@ export type SectionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -381,6 +402,7 @@ export type SectionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -466,6 +488,7 @@ export type SectionUpdateOneWithoutApprovalFlowStepNestedInput = {
 
 export type SectionCreateWithoutUsersInput = {
   name: string
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   department: Prisma.DepartmentCreateNestedOneWithoutSectionsInput
@@ -476,6 +499,7 @@ export type SectionUncheckedCreateWithoutUsersInput = {
   id?: number
   name: string
   departmentId: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   ApprovalFlowStep?: Prisma.ApprovalFlowStepUncheckedCreateNestedManyWithoutSectionInput
@@ -499,6 +523,7 @@ export type SectionUpdateToOneWithWhereWithoutUsersInput = {
 
 export type SectionUpdateWithoutUsersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   department?: Prisma.DepartmentUpdateOneRequiredWithoutSectionsNestedInput
@@ -509,6 +534,7 @@ export type SectionUncheckedUpdateWithoutUsersInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   departmentId?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ApprovalFlowStep?: Prisma.ApprovalFlowStepUncheckedUpdateManyWithoutSectionNestedInput
@@ -516,6 +542,7 @@ export type SectionUncheckedUpdateWithoutUsersInput = {
 
 export type SectionCreateWithoutDepartmentInput = {
   name: string
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserCreateNestedManyWithoutSectionInput
@@ -525,6 +552,7 @@ export type SectionCreateWithoutDepartmentInput = {
 export type SectionUncheckedCreateWithoutDepartmentInput = {
   id?: number
   name: string
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutSectionInput
@@ -564,12 +592,14 @@ export type SectionScalarWhereInput = {
   id?: Prisma.IntFilter<"Section"> | number
   name?: Prisma.StringFilter<"Section"> | string
   departmentId?: Prisma.IntFilter<"Section"> | number
+  isActive?: Prisma.BoolFilter<"Section"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Section"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Section"> | Date | string
 }
 
 export type SectionCreateWithoutApprovalFlowStepInput = {
   name: string
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   department: Prisma.DepartmentCreateNestedOneWithoutSectionsInput
@@ -580,6 +610,7 @@ export type SectionUncheckedCreateWithoutApprovalFlowStepInput = {
   id?: number
   name: string
   departmentId: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutSectionInput
@@ -603,6 +634,7 @@ export type SectionUpdateToOneWithWhereWithoutApprovalFlowStepInput = {
 
 export type SectionUpdateWithoutApprovalFlowStepInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   department?: Prisma.DepartmentUpdateOneRequiredWithoutSectionsNestedInput
@@ -613,6 +645,7 @@ export type SectionUncheckedUpdateWithoutApprovalFlowStepInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   departmentId?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutSectionNestedInput
@@ -621,12 +654,14 @@ export type SectionUncheckedUpdateWithoutApprovalFlowStepInput = {
 export type SectionCreateManyDepartmentInput = {
   id?: number
   name: string
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type SectionUpdateWithoutDepartmentInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUpdateManyWithoutSectionNestedInput
@@ -636,6 +671,7 @@ export type SectionUpdateWithoutDepartmentInput = {
 export type SectionUncheckedUpdateWithoutDepartmentInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutSectionNestedInput
@@ -645,6 +681,7 @@ export type SectionUncheckedUpdateWithoutDepartmentInput = {
 export type SectionUncheckedUpdateManyWithoutDepartmentInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -693,6 +730,7 @@ export type SectionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   id?: boolean
   name?: boolean
   departmentId?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   department?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>
@@ -707,11 +745,12 @@ export type SectionSelectScalar = {
   id?: boolean
   name?: boolean
   departmentId?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SectionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "departmentId" | "createdAt" | "updatedAt", ExtArgs["result"]["section"]>
+export type SectionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "departmentId" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["section"]>
 export type SectionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   department?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>
   users?: boolean | Prisma.Section$usersArgs<ExtArgs>
@@ -730,6 +769,7 @@ export type $SectionPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     id: number
     name: string
     departmentId: number
+    isActive: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["section"]>
@@ -1107,6 +1147,7 @@ export interface SectionFieldRefs {
   readonly id: Prisma.FieldRef<"Section", 'Int'>
   readonly name: Prisma.FieldRef<"Section", 'String'>
   readonly departmentId: Prisma.FieldRef<"Section", 'Int'>
+  readonly isActive: Prisma.FieldRef<"Section", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Section", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Section", 'DateTime'>
 }

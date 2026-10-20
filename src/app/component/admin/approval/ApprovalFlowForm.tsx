@@ -92,6 +92,14 @@ export default function ApprovalFlowForm({
   const [loading, setLoading] = useState(false);
   const styleLink = `flex flex-col gap-y-2`;
 
+  // The shared list only holds active divisions; keep the step's saved one in
+  // it so a since-deactivated division still shows by name, not its id.
+  const savedDivision = selectedStep?.division;
+  const divisionMenu =
+    savedDivision && !divisions.some((d) => d.id === savedDivision.id)
+      ? [...divisions, savedDivision]
+      : divisions;
+
   useEffect(() => {
     if (selectedStep) {
       setData({
@@ -390,7 +398,7 @@ export default function ApprovalFlowForm({
                       className="block text-sm font-medium text-gray-900 dark:text-gray-100"
                     />
                     <ComboBox
-                      menu={addDashOption(divisions)}
+                      menu={addDashOption(divisionMenu)}
                       onSelect={(item) => {
                         const divisionId = item ? item.id.toString() : "";
                         setData((prev) => ({

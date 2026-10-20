@@ -855,10 +855,6 @@ export type NullableEnumRoleFieldUpdateOperationsInput = {
   set?: $Enums.Role | null
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type EnumApproverSourceTypeFieldUpdateOperationsInput = {
   set?: $Enums.ApproverSourceType
 }

@@ -127,7 +127,10 @@ export default function FlexibleWorkingArrangement({
 
         if (userInfo.departmentId) {
           const deptRes = await axios.get(
-            withBasePath(`/api/department?divisionId=${userInfo.divisionId}`),
+            // includeId: still resolve the name if the department was deactivated.
+            withBasePath(
+              `/api/department?divisionId=${userInfo.divisionId}&includeId=${userInfo.departmentId}`,
+            ),
           );
           const dept = (
             deptRes.data as { id: number; name: string }[]

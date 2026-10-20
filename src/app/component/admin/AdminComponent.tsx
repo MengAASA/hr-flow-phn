@@ -17,6 +17,7 @@ import dynamic from "next/dynamic";
 import ApprovalFlow, { ApprovalFlowStep } from "./approval/ApprovalFlow";
 import { motion, Variants } from "framer-motion";
 import FormSubmission from "./form-submission/FormSubmission";
+import OrgStructure from "./org-structure/OrgStructure";
 import { withBasePath } from "@/lib/base-path";
 
 const Tabs = dynamic(() => import("../ui/Tabs"), { ssr: false });
@@ -49,11 +50,15 @@ export default function AdminComponent({
   const [selectedDivision, setSelectedDivision] = useState<string>("");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
 
-  useEffect(() => {
+  const fetchDivisions = () => {
     axios
       .get(withBasePath("/api/division"))
       .then((res) => setDivisions(res.data))
       .catch((err) => console.error("Failed to fetch data:", err));
+  };
+
+  useEffect(() => {
+    fetchDivisions();
   }, []);
 
   useEffect(() => {
@@ -89,9 +94,9 @@ export default function AdminComponent({
     },
   };
 
-  // Form Create and Approval Flow reconfigure the whole organisation, so only
-  // a full admin gets them. Every other admin role lands on the User Listing
-  // and Form Submission tabs, both read-only.
+  // Form Create, Approval Flow and Organisation Structure reconfigure the whole
+  // organisation, so only a full admin gets them. Every other admin role lands
+  // on the User Listing and Form Submission tabs, both read-only.
   const orgWideTabs = !isFullAdmin ? [] : ([
     {
       name: "Form Create",
@@ -114,6 +119,14 @@ export default function AdminComponent({
             setSelectedDivision={setSelectedDivision}
             setSelectedDepartment={setSelectedDepartment}
           />
+        </motion.div>
+      ),
+    },
+    {
+      name: "Organisation Structure",
+      content: (
+        <motion.div key="org-structure" initial="hidden" animate="visible" variants={tabContentVariants}>
+          <OrgStructure onDivisionsChange={fetchDivisions} />
         </motion.div>
       ),
     },

@@ -61,17 +61,21 @@ export default function ProfileComponent({
     }
   }, [session]);
 
+  // Keep the user's saved units in the lists even if an admin has since
+  // deactivated them, so the form still shows their names.
+  const includeId = (id?: number | null) => (id ? `includeId=${id}` : "");
+
   useEffect(() => {
     axios
-      .get(withBasePath("/api/division"))
+      .get(withBasePath(`/api/division?${includeId(userProfile?.divisionId)}`))
       .then((res) => setDivisions(res.data))
       .catch((err) => console.error("Failed to fetch data:", err));
-  }, []);
+  }, [userProfile?.divisionId]);
 
   useEffect(() => {
     if (selectedDivision) {
       axios
-        .get(withBasePath(`/api/department?divisionId=${selectedDivision}`))
+        .get(withBasePath(`/api/department?divisionId=${selectedDivision}&${includeId(userProfile?.departmentId)}`))
         .then((res) => {
           setDepartments(res.data);
           setSections([]);
@@ -83,17 +87,17 @@ export default function ProfileComponent({
     }
     setSelectedDepartment("");
     setSelectedSection("");
-  }, [selectedDivision]);
+  }, [selectedDivision, userProfile?.departmentId]);
 
   useEffect(() => {
     if (selectedDepartment) {
       axios
-        .get(withBasePath(`/api/section?departmentId=${selectedDepartment}`))
+        .get(withBasePath(`/api/section?departmentId=${selectedDepartment}&${includeId(userProfile?.sectionId)}`))
         .then((res) => setSections(res.data))
         .catch((err) => console.error("Failed to fetch data:", err));
     } else setSections([]);
     setSelectedSection("");
-  }, [selectedDepartment]);
+  }, [selectedDepartment, userProfile?.sectionId]);
 
   const containerVariants: Variants = {
     hidden: {},

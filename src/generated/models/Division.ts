@@ -37,6 +37,7 @@ export type DivisionSumAggregateOutputType = {
 export type DivisionMinAggregateOutputType = {
   id: number | null
   name: string | null
+  isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -44,6 +45,7 @@ export type DivisionMinAggregateOutputType = {
 export type DivisionMaxAggregateOutputType = {
   id: number | null
   name: string | null
+  isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -51,6 +53,7 @@ export type DivisionMaxAggregateOutputType = {
 export type DivisionCountAggregateOutputType = {
   id: number
   name: number
+  isActive: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -68,6 +71,7 @@ export type DivisionSumAggregateInputType = {
 export type DivisionMinAggregateInputType = {
   id?: true
   name?: true
+  isActive?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -75,6 +79,7 @@ export type DivisionMinAggregateInputType = {
 export type DivisionMaxAggregateInputType = {
   id?: true
   name?: true
+  isActive?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -82,6 +87,7 @@ export type DivisionMaxAggregateInputType = {
 export type DivisionCountAggregateInputType = {
   id?: true
   name?: true
+  isActive?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -176,6 +182,7 @@ export type DivisionGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 export type DivisionGroupByOutputType = {
   id: number
   name: string
+  isActive: boolean
   createdAt: Date
   updatedAt: Date
   _count: DivisionCountAggregateOutputType | null
@@ -206,6 +213,7 @@ export type DivisionWhereInput = {
   NOT?: Prisma.DivisionWhereInput | Prisma.DivisionWhereInput[]
   id?: Prisma.IntFilter<"Division"> | number
   name?: Prisma.StringFilter<"Division"> | string
+  isActive?: Prisma.BoolFilter<"Division"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Division"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Division"> | Date | string
   departments?: Prisma.DepartmentListRelationFilter
@@ -216,6 +224,7 @@ export type DivisionWhereInput = {
 export type DivisionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   departments?: Prisma.DepartmentOrderByRelationAggregateInput
@@ -230,6 +239,7 @@ export type DivisionWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.DivisionWhereInput[]
   NOT?: Prisma.DivisionWhereInput | Prisma.DivisionWhereInput[]
   name?: Prisma.StringFilter<"Division"> | string
+  isActive?: Prisma.BoolFilter<"Division"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Division"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Division"> | Date | string
   departments?: Prisma.DepartmentListRelationFilter
@@ -240,6 +250,7 @@ export type DivisionWhereUniqueInput = Prisma.AtLeast<{
 export type DivisionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.DivisionCountOrderByAggregateInput
@@ -255,12 +266,14 @@ export type DivisionScalarWhereWithAggregatesInput = {
   NOT?: Prisma.DivisionScalarWhereWithAggregatesInput | Prisma.DivisionScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Division"> | number
   name?: Prisma.StringWithAggregatesFilter<"Division"> | string
+  isActive?: Prisma.BoolWithAggregatesFilter<"Division"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Division"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Division"> | Date | string
 }
 
 export type DivisionCreateInput = {
   name: string
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   departments?: Prisma.DepartmentCreateNestedManyWithoutDivisionInput
@@ -271,6 +284,7 @@ export type DivisionCreateInput = {
 export type DivisionUncheckedCreateInput = {
   id?: number
   name: string
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   departments?: Prisma.DepartmentUncheckedCreateNestedManyWithoutDivisionInput
@@ -280,6 +294,7 @@ export type DivisionUncheckedCreateInput = {
 
 export type DivisionUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departments?: Prisma.DepartmentUpdateManyWithoutDivisionNestedInput
@@ -290,6 +305,7 @@ export type DivisionUpdateInput = {
 export type DivisionUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departments?: Prisma.DepartmentUncheckedUpdateManyWithoutDivisionNestedInput
@@ -300,12 +316,14 @@ export type DivisionUncheckedUpdateInput = {
 export type DivisionCreateManyInput = {
   id?: number
   name: string
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type DivisionUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -313,6 +331,7 @@ export type DivisionUpdateManyMutationInput = {
 export type DivisionUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -331,6 +350,7 @@ export type DivisionOrderByRelevanceInput = {
 export type DivisionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -342,6 +362,7 @@ export type DivisionAvgOrderByAggregateInput = {
 export type DivisionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -349,6 +370,7 @@ export type DivisionMaxOrderByAggregateInput = {
 export type DivisionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -376,6 +398,10 @@ export type DivisionUpdateOneWithoutUsersNestedInput = {
   delete?: Prisma.DivisionWhereInput | boolean
   connect?: Prisma.DivisionWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.DivisionUpdateToOneWithWhereWithoutUsersInput, Prisma.DivisionUpdateWithoutUsersInput>, Prisma.DivisionUncheckedUpdateWithoutUsersInput>
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 export type DivisionCreateNestedOneWithoutDepartmentsInput = {
@@ -410,6 +436,7 @@ export type DivisionUpdateOneWithoutApprovalFlowStepNestedInput = {
 
 export type DivisionCreateWithoutUsersInput = {
   name: string
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   departments?: Prisma.DepartmentCreateNestedManyWithoutDivisionInput
@@ -419,6 +446,7 @@ export type DivisionCreateWithoutUsersInput = {
 export type DivisionUncheckedCreateWithoutUsersInput = {
   id?: number
   name: string
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   departments?: Prisma.DepartmentUncheckedCreateNestedManyWithoutDivisionInput
@@ -443,6 +471,7 @@ export type DivisionUpdateToOneWithWhereWithoutUsersInput = {
 
 export type DivisionUpdateWithoutUsersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departments?: Prisma.DepartmentUpdateManyWithoutDivisionNestedInput
@@ -452,6 +481,7 @@ export type DivisionUpdateWithoutUsersInput = {
 export type DivisionUncheckedUpdateWithoutUsersInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departments?: Prisma.DepartmentUncheckedUpdateManyWithoutDivisionNestedInput
@@ -460,6 +490,7 @@ export type DivisionUncheckedUpdateWithoutUsersInput = {
 
 export type DivisionCreateWithoutDepartmentsInput = {
   name: string
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserCreateNestedManyWithoutDivisionInput
@@ -469,6 +500,7 @@ export type DivisionCreateWithoutDepartmentsInput = {
 export type DivisionUncheckedCreateWithoutDepartmentsInput = {
   id?: number
   name: string
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutDivisionInput
@@ -493,6 +525,7 @@ export type DivisionUpdateToOneWithWhereWithoutDepartmentsInput = {
 
 export type DivisionUpdateWithoutDepartmentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUpdateManyWithoutDivisionNestedInput
@@ -502,6 +535,7 @@ export type DivisionUpdateWithoutDepartmentsInput = {
 export type DivisionUncheckedUpdateWithoutDepartmentsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutDivisionNestedInput
@@ -510,6 +544,7 @@ export type DivisionUncheckedUpdateWithoutDepartmentsInput = {
 
 export type DivisionCreateWithoutApprovalFlowStepInput = {
   name: string
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   departments?: Prisma.DepartmentCreateNestedManyWithoutDivisionInput
@@ -519,6 +554,7 @@ export type DivisionCreateWithoutApprovalFlowStepInput = {
 export type DivisionUncheckedCreateWithoutApprovalFlowStepInput = {
   id?: number
   name: string
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   departments?: Prisma.DepartmentUncheckedCreateNestedManyWithoutDivisionInput
@@ -543,6 +579,7 @@ export type DivisionUpdateToOneWithWhereWithoutApprovalFlowStepInput = {
 
 export type DivisionUpdateWithoutApprovalFlowStepInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departments?: Prisma.DepartmentUpdateManyWithoutDivisionNestedInput
@@ -552,6 +589,7 @@ export type DivisionUpdateWithoutApprovalFlowStepInput = {
 export type DivisionUncheckedUpdateWithoutApprovalFlowStepInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departments?: Prisma.DepartmentUncheckedUpdateManyWithoutDivisionNestedInput
@@ -610,6 +648,7 @@ export type DivisionCountOutputTypeCountApprovalFlowStepArgs<ExtArgs extends run
 export type DivisionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   departments?: boolean | Prisma.Division$departmentsArgs<ExtArgs>
@@ -623,11 +662,12 @@ export type DivisionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type DivisionSelectScalar = {
   id?: boolean
   name?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type DivisionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "createdAt" | "updatedAt", ExtArgs["result"]["division"]>
+export type DivisionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["division"]>
 export type DivisionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   departments?: boolean | Prisma.Division$departmentsArgs<ExtArgs>
   users?: boolean | Prisma.Division$usersArgs<ExtArgs>
@@ -645,6 +685,7 @@ export type $DivisionPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     name: string
+    isActive: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["division"]>
@@ -1021,6 +1062,7 @@ export interface Prisma__DivisionClient<T, Null = never, ExtArgs extends runtime
 export interface DivisionFieldRefs {
   readonly id: Prisma.FieldRef<"Division", 'Int'>
   readonly name: Prisma.FieldRef<"Division", 'String'>
+  readonly isActive: Prisma.FieldRef<"Division", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Division", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Division", 'DateTime'>
 }

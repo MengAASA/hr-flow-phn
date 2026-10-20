@@ -128,6 +128,7 @@ export type FormTypeAdminScalarFieldEnum = (typeof FormTypeAdminScalarFieldEnum)
 export const DivisionScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -139,6 +140,7 @@ export const DepartmentScalarFieldEnum = {
   id: 'id',
   name: 'name',
   divisionId: 'divisionId',
+  isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -150,6 +152,7 @@ export const SectionScalarFieldEnum = {
   id: 'id',
   name: 'name',
   departmentId: 'departmentId',
+  isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
