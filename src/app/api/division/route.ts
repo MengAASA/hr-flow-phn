@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json(getDivision, { status: 200 });
     }
     catch (error) {
+        console.error("Error fetching divisions:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

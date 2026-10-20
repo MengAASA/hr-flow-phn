@@ -43,6 +43,7 @@ export default function Login() {
         toast.success("Login successful", { id: toastId });
       }
     } catch (error) {
+      console.error("Sign-in error:", error);
       toast.error("Something went wrong", { id: toastId });
     } finally {
       setLoading(false);

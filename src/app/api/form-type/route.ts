@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(createFormType);
   } catch (error) {
+    console.error("Error creating form type:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
@@ -25,6 +26,7 @@ export async function GET() {
     const getAllFormType = await prisma.formType.findMany();
     return NextResponse.json(getAllFormType);
   } catch (error) {
+    console.error("Error fetching form types:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

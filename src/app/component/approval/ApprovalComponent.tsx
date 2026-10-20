@@ -251,7 +251,6 @@ export default function ApprovalComponent({
     });
     if ((forms || []).length > 0 && user.department?.name) set.add(user.department.name);
     return toMenu(Array.from(set).sort());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [approvals, forms, user.department?.name]);
 
   const requestorMenu = useMemo(() => {
@@ -262,7 +261,6 @@ export default function ApprovalComponent({
     });
     if ((forms || []).length > 0) set.add("You");
     return toMenu(Array.from(set).sort());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [approvals, forms]);
 
   const formTypeMenu = useMemo(() => {

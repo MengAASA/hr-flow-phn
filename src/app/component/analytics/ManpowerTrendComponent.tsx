@@ -286,7 +286,6 @@ export default function ManpowerTrendComponent() {
   );
 
   const hasTrendData = periods.length > 0;
-  const firstPeriod = periods[0];
   const latestPeriod = periods[periods.length - 1];
   const previousPeriod = periods.length > 1 ? periods[periods.length - 2] : null;
 

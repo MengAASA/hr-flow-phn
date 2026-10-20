@@ -135,6 +135,7 @@ export async function GET() {
     }));
     return NextResponse.json(usersWithRoles);
   } catch (error) {
+    console.error("Error fetching users:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

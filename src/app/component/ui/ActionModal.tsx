@@ -44,7 +44,7 @@ export default function ActionModal({
       const timeout = setTimeout(() => setShow(false), 300);
       return () => clearTimeout(timeout);
     }
-  }, [isOpen]);
+  }, [isOpen, initialValue]);
 
   if (!show) return null;
 
