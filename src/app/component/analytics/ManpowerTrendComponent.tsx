@@ -189,6 +189,9 @@ export default function ManpowerTrendComponent() {
     isUploading,
     isLoadingSavedData,
     handleFileUpload,
+    duplicateWarning,
+    confirmDuplicateUpload,
+    cancelDuplicateUpload,
   } = useManpowerEmployees(() => {
     setSelectedYear(currentDate.getFullYear().toString());
     setSelectedPlant("All Plants");
@@ -274,9 +277,8 @@ export default function ManpowerTrendComponent() {
 
     if (employee.employeeStatus === "PERMANENT") point.permanent += 1;
     if (employee.employeeStatus === "CONTRACT") point.contract += 1;
-    if (employee.citizenship === "MALAYSIAN") point.local += 1;
-    if (employee.citizenship !== "" && employee.citizenship !== "MALAYSIAN")
-      point.foreign += 1;
+    if (employee.citizenship === "LOCAL") point.local += 1;
+    if (employee.citizenship === "FOREIGN") point.foreign += 1;
     if (employee.gender === "M") point.male += 1;
     if (employee.gender === "F") point.female += 1;
   });
@@ -342,6 +344,9 @@ export default function ManpowerTrendComponent() {
         employeeCount={employees.length}
         fileInputRef={fileInputRef}
         onFileChange={handleFileUpload}
+        duplicateWarning={duplicateWarning}
+        onConfirmDuplicates={confirmDuplicateUpload}
+        onCancelDuplicates={cancelDuplicateUpload}
       />
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 shadow-sm">

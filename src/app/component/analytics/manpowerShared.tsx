@@ -322,19 +322,52 @@ export function parseSheetPeriod(sheetName: string) {
   };
 }
 
+// Section_Occ and Date_Join are optional: a row without a join date is still
+// loaded and treated as having joined before any reporting period.
+const requiredEmployeeColumns = [
+  ["EmpNo", "empNo"],
+  ["Division", "division"],
+  ["Department", "department"],
+  ["Team", "plant"],
+] as const;
+
+// Source exports spell some plants more than one way; map them to the name
+// used everywhere else in the dashboard.
+const plantAliases: Record<string, string> = {
+  PEKAN: "PEKAN PLANT",
+};
+
+export function normalizePlant(value: unknown) {
+  const normalized = normalizeText(value);
+  return plantAliases[normalized.toUpperCase()] ?? normalized;
+}
+
+export type SkippedWorksheetRow = {
+  rowNumber: number;
+  missingColumns: string[];
+};
+
 export function mapWorksheetRowsToEmployees(
   rows: Record<string, unknown>[],
   sheetName?: string,
 ) {
   const { snapshotMonth, snapshotYear } = parseSheetPeriod(sheetName ?? "");
+  const employees: EmployeeRecord[] = [];
+  // Excel row number of each entry in `employees`, for duplicate reporting.
+  const rowNumbers: number[] = [];
+  const skippedRows: SkippedWorksheetRow[] = [];
 
-  return rows
-    .map((row) => ({
+  rows.forEach((row, index) => {
+    // sheet_to_json tags each row with its 0-based sheet row index;
+    // fall back to header row + position if it is absent.
+    const rowNumber =
+      ((row as { __rowNum__?: number }).__rowNum__ ?? index + 1) + 1;
+    const employee: EmployeeRecord = {
       empNo: normalizeText(row.EmpNo),
       division: normalizeText(row.Division),
       department: normalizeText(row.Department),
       section: normalizeText(row.Section_Occ),
-      plant: normalizeText(row.Team),
+      plant: normalizePlant(row.Team),
       gender: normalizeGender(row.Sex),
       labourCategory: normalizeText(row.Level_Occ).toUpperCase(),
       employeeType: normalizeText(row.Employee_Type).toUpperCase(),
@@ -346,16 +379,93 @@ export function mapWorksheetRowsToEmployees(
       ),
       snapshotMonth,
       snapshotYear,
-    }))
-    .filter(
-      (employee) =>
-        employee.empNo &&
-        employee.division &&
-        employee.department &&
-        employee.section &&
-        employee.plant &&
-        employee.joinDate,
-    );
+    };
+
+    const missingColumns = requiredEmployeeColumns
+      .filter(([, field]) => !employee[field])
+      .map(([column]) => column);
+
+    if (missingColumns.length > 0) {
+      skippedRows.push({ rowNumber, missingColumns });
+      return;
+    }
+
+    employees.push(employee);
+    rowNumbers.push(rowNumber);
+  });
+
+  return { employees, rowNumbers, skippedRows };
+}
+
+export type DuplicateEmployee = {
+  empNo: string;
+  rowRefs: string[];
+};
+
+export type DuplicateWarning = {
+  fileName: string;
+  duplicates: DuplicateEmployee[];
+};
+
+function findDuplicateEmployees(
+  employees: EmployeeRecord[],
+  rowRefs: string[],
+): DuplicateEmployee[] {
+  const byEmpNo = new Map<string, DuplicateEmployee>();
+
+  employees.forEach((employee, index) => {
+    const key = employee.empNo.toUpperCase();
+    const entry = byEmpNo.get(key) ?? { empNo: employee.empNo, rowRefs: [] };
+    entry.rowRefs.push(rowRefs[index]);
+    byEmpNo.set(key, entry);
+  });
+
+  return Array.from(byEmpNo.values()).filter(
+    (entry) => entry.rowRefs.length > 1,
+  );
+}
+
+function keepFirstRowPerEmployee(employees: EmployeeRecord[]) {
+  const seen = new Set<string>();
+
+  return employees.filter((employee) => {
+    const key = employee.empNo.toUpperCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+export function describeSkippedRows(
+  skippedRows: (SkippedWorksheetRow & { sheetName: string })[],
+  showSheetName: boolean,
+) {
+  if (skippedRows.length === 0) return "";
+
+  const countsByColumn = new Map<string, number>();
+  skippedRows.forEach(({ missingColumns }) =>
+    missingColumns.forEach((column) =>
+      countsByColumn.set(column, (countsByColumn.get(column) ?? 0) + 1),
+    ),
+  );
+
+  const reasons = Array.from(
+    countsByColumn,
+    ([column, count]) => `${column} (${count})`,
+  ).join(", ");
+  const maxListedRows = 10;
+  const listedRows = skippedRows
+    .slice(0, maxListedRows)
+    .map(({ sheetName, rowNumber }) =>
+      showSheetName ? `${sheetName}!${rowNumber}` : String(rowNumber),
+    )
+    .join(", ");
+  const moreRows =
+    skippedRows.length > maxListedRows
+      ? ` and ${skippedRows.length - maxListedRows} more`
+      : "";
+
+  return `Skipped ${formatCount(skippedRows.length)} row(s) with a missing required value: ${reasons}. Excel row(s): ${listedRows}${moreRows}.`;
 }
 
 export function parseDate(value: string | null) {
@@ -374,9 +484,11 @@ export function isActiveAt(employee: EmployeeRecord, date: Date) {
   const joinDate = parseDate(employee.joinDate);
   const resignationDate = parseDate(employee.resignationDate);
 
-  if (!joinDate) return false;
-
-  return joinDate <= date && (!resignationDate || resignationDate > date);
+  // No join date means the employee is treated as already on board.
+  return (
+    (!joinDate || joinDate <= date) &&
+    (!resignationDate || resignationDate > date)
+  );
 }
 
 export function isActiveWithinPeriod(
@@ -387,10 +499,9 @@ export function isActiveWithinPeriod(
   const joinDate = parseDate(employee.joinDate);
   const resignationDate = parseDate(employee.resignationDate);
 
-  if (!joinDate) return false;
-
   return (
-    joinDate <= endDate && (!resignationDate || resignationDate >= startDate)
+    (!joinDate || joinDate <= endDate) &&
+    (!resignationDate || resignationDate >= startDate)
   );
 }
 
@@ -403,10 +514,8 @@ export function matchesCategory(employee: EmployeeRecord, category: string) {
     employee.labourCategory === normalizedCategory ||
     employee.employeeType === normalizedCategory ||
     employee.employeeStatus === normalizedCategory ||
-    (normalizedCategory === "LOCAL" && employee.citizenship === "MALAYSIAN") ||
-    (normalizedCategory === "FOREIGN" &&
-      employee.citizenship !== "" &&
-      employee.citizenship !== "MALAYSIAN")
+    (normalizedCategory === "LOCAL" && employee.citizenship === "LOCAL") ||
+    (normalizedCategory === "FOREIGN" && employee.citizenship === "FOREIGN")
   );
 }
 
@@ -440,6 +549,14 @@ export function matchesPlantDepartmentDivisionCategory(
   return matchesCategory(employee, filters.category);
 }
 
+type ParsedUpload = {
+  file: File;
+  period: { month: number; year: number };
+  employees: EmployeeRecord[];
+  // Extra text (skipped / removed rows) appended to the success message.
+  notes: string;
+};
+
 export function useManpowerEmployees(
   onLoaded?: (employees: EmployeeRecord[]) => void,
 ) {
@@ -453,6 +570,11 @@ export function useManpowerEmployees(
   );
   const [isUploading, setIsUploading] = useState(false);
   const [isLoadingSavedData, setIsLoadingSavedData] = useState(true);
+  // A parsed workbook held back until the user decides what to do about its
+  // duplicate employee numbers.
+  const [pendingDuplicateUpload, setPendingDuplicateUpload] = useState<
+    (ParsedUpload & { duplicates: DuplicateEmployee[] }) | null
+  >(null);
 
   const applyEmployees = (nextEmployees: EmployeeRecord[], message: string) => {
     setEmployees(nextEmployees);
@@ -460,7 +582,9 @@ export function useManpowerEmployees(
     onLoadedRef.current?.(nextEmployees);
   };
 
-  const loadSavedData = async () => {
+  // `uploadSummary` keeps the result of a just-finished upload (including any
+  // skipped rows) visible instead of being replaced by the generic message.
+  const loadSavedData = async (uploadSummary?: string) => {
     try {
       const response = await fetch(withBasePath("/api/manpower-dashboard"));
 
@@ -483,9 +607,15 @@ export function useManpowerEmployees(
         .map((upload) => `${monthNames[upload.snapshotMonth]} ${upload.snapshotYear}`)
         .join(", ");
 
+      const loadedMessage = `Loaded ${payload.data.employees.length} employee records across ${payload.data.uploads.length} period(s): ${periodsLabel}.`;
+
+      // Uploads saved before plant aliasing existed may still hold old names.
       applyEmployees(
-        payload.data.employees,
-        `Loaded ${payload.data.employees.length} employee records across ${payload.data.uploads.length} period(s): ${periodsLabel}.`,
+        payload.data.employees.map((employee) => ({
+          ...employee,
+          plant: normalizePlant(employee.plant),
+        })),
+        uploadSummary ? `${uploadSummary} ${loadedMessage}` : loadedMessage,
       );
     } catch (error) {
       console.error(error);
@@ -502,58 +632,14 @@ export function useManpowerEmployees(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleFileUpload = async (
-    event: ChangeEvent<HTMLInputElement>,
-    period: { month: number; year: number },
-  ) => {
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
+  const saveUpload = async ({ file, period, employees, notes }: ParsedUpload) => {
     try {
       setIsUploading(true);
-      setUploadMessage(`Reading ${file.name} and saving it to the database...`);
-
-      const [buffer, XLSX] = await Promise.all([file.arrayBuffer(), loadXlsx()]);
-      const workbook = XLSX.read(buffer, { type: "array" });
-      const firstSheetName = workbook.SheetNames[0];
-
-      if (!firstSheetName) {
-        setUploadMessage(
-          "The uploaded workbook does not contain any worksheet.",
-        );
-        return;
-      }
-
-      const parsedEmployees = workbook.SheetNames.flatMap((sheetName) => {
-        const worksheet = workbook.Sheets[sheetName];
-        const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(
-          worksheet,
-          {
-            defval: "",
-            raw: false,
-          },
-        );
-
-        return mapWorksheetRowsToEmployees(rows);
-      }).map((employee) => ({
-        ...employee,
-        snapshotMonth: period.month,
-        snapshotYear: period.year,
-      }));
-
-      if (parsedEmployees.length === 0) {
-        setUploadMessage(
-          "No valid manpower rows were found. Expected columns include EmpNo, Department, Team, Level_Occ, Employee_Type, Employee_Status, Education_Category, Date_Join, and Date_Resignation.",
-        );
-        return;
-      }
+      setUploadMessage(`Saving ${file.name} to the database...`);
 
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("employees", JSON.stringify(parsedEmployees));
+      formData.append("employees", JSON.stringify(employees));
       formData.append("month", String(period.month));
       formData.append("year", String(period.year));
 
@@ -568,25 +654,150 @@ export function useManpowerEmployees(
         throw new Error(payload.error || "Failed to save manpower workbook.");
       }
 
-      setUploadMessage(
-        `Saved ${parsedEmployees.length} employee records for ${monthNames[period.month]} ${period.year}. Refreshing...`,
-      );
+      const uploadSummary =
+        `Saved ${formatCount(employees.length)} employee records for ${monthNames[period.month]} ${period.year}. ${notes}`.trim();
+      setUploadMessage(`${uploadSummary} Refreshing...`);
 
       // Uploads accumulate one period per month/year, so re-fetch the merged
       // picture from the server rather than replacing local state outright.
-      await loadSavedData();
+      await loadSavedData(uploadSummary);
     } catch (error) {
-      console.error("Failed to read workbook:", error);
+      console.error("Failed to save workbook:", error);
       setUploadMessage(
         error instanceof Error
           ? error.message
-          : "The Excel file could not be read. Please upload a valid .xlsx file.",
+          : "Failed to save manpower workbook.",
       );
     } finally {
       setIsUploading(false);
-      event.target.value = "";
     }
   };
+
+  const handleFileUpload = async (
+    event: ChangeEvent<HTMLInputElement>,
+    period: { month: number; year: number },
+  ) => {
+    const file = event.target.files?.[0];
+    // Reset so picking the same file again still fires onChange.
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    let parsedUpload: ParsedUpload;
+    let duplicates: DuplicateEmployee[];
+
+    try {
+      setIsUploading(true);
+      setUploadMessage(`Reading ${file.name}...`);
+
+      const [buffer, XLSX] = await Promise.all([file.arrayBuffer(), loadXlsx()]);
+      const workbook = XLSX.read(buffer, { type: "array" });
+      const firstSheetName = workbook.SheetNames[0];
+
+      if (!firstSheetName) {
+        setUploadMessage(
+          "The uploaded workbook does not contain any worksheet.",
+        );
+        return;
+      }
+
+      const showSheetName = workbook.SheetNames.length > 1;
+      const skippedRows: (SkippedWorksheetRow & { sheetName: string })[] = [];
+      const rowRefs: string[] = [];
+      const parsedEmployees = workbook.SheetNames.flatMap((sheetName) => {
+        const worksheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(
+          worksheet,
+          {
+            defval: "",
+            raw: false,
+          },
+        );
+
+        const result = mapWorksheetRowsToEmployees(rows);
+        skippedRows.push(
+          ...result.skippedRows.map((row) => ({ ...row, sheetName })),
+        );
+        rowRefs.push(
+          ...result.rowNumbers.map((rowNumber) =>
+            showSheetName ? `${sheetName}!${rowNumber}` : String(rowNumber),
+          ),
+        );
+        return result.employees;
+      }).map((employee) => ({
+        ...employee,
+        snapshotMonth: period.month,
+        snapshotYear: period.year,
+      }));
+      const skippedSummary = describeSkippedRows(skippedRows, showSheetName);
+
+      if (parsedEmployees.length === 0) {
+        setUploadMessage(
+          `No valid manpower rows were found. Required columns: EmpNo, Division, Department, and Team. ${skippedSummary}`.trim(),
+        );
+        return;
+      }
+
+      parsedUpload = {
+        file,
+        period,
+        employees: parsedEmployees,
+        notes: skippedSummary,
+      };
+      duplicates = findDuplicateEmployees(parsedEmployees, rowRefs);
+    } catch (error) {
+      console.error("Failed to read workbook:", error);
+      setUploadMessage(
+        "The Excel file could not be read. Please upload a valid .xlsx file.",
+      );
+      return;
+    } finally {
+      setIsUploading(false);
+    }
+
+    if (duplicates.length > 0) {
+      setPendingDuplicateUpload({ ...parsedUpload, duplicates });
+      setUploadMessage(
+        `${file.name} has ${duplicates.length} duplicate employee number(s). Choose whether to upload anyway.`,
+      );
+      return;
+    }
+
+    await saveUpload(parsedUpload);
+  };
+
+  const confirmDuplicateUpload = async () => {
+    if (!pendingDuplicateUpload) return;
+
+    const { duplicates, ...parsedUpload } = pendingDuplicateUpload;
+    const employeesToSave = keepFirstRowPerEmployee(parsedUpload.employees);
+    const removedCount = parsedUpload.employees.length - employeesToSave.length;
+    setPendingDuplicateUpload(null);
+
+    await saveUpload({
+      ...parsedUpload,
+      employees: employeesToSave,
+      notes: `${parsedUpload.notes} Removed ${formatCount(removedCount)} duplicate row(s) for ${duplicates.length} employee number(s), keeping the first row of each.`.trim(),
+    });
+  };
+
+  const cancelDuplicateUpload = () => {
+    if (!pendingDuplicateUpload) return;
+
+    setUploadMessage(
+      `Upload cancelled: ${pendingDuplicateUpload.file.name} has ${pendingDuplicateUpload.duplicates.length} duplicate employee number(s). Fix the file and upload it again.`,
+    );
+    setPendingDuplicateUpload(null);
+  };
+
+  const duplicateWarning: DuplicateWarning | null = pendingDuplicateUpload
+    ? {
+        fileName: pendingDuplicateUpload.file.name,
+        duplicates: pendingDuplicateUpload.duplicates,
+      }
+    : null;
 
   return {
     fileInputRef,
@@ -595,6 +806,9 @@ export function useManpowerEmployees(
     isUploading,
     isLoadingSavedData,
     handleFileUpload,
+    duplicateWarning,
+    confirmDuplicateUpload,
+    cancelDuplicateUpload,
   };
 }
 
@@ -623,7 +837,7 @@ const manpowerTemplateSampleRow = [
   "DIRECT LABOUR",
   "NON EXECUTIVE",
   "PERMANENT",
-  "MALAYSIAN",
+  "LOCAL",
   "1/15/2023",
   "",
 ];
@@ -648,6 +862,9 @@ export function DataSourceCard({
   employeeCount,
   fileInputRef,
   onFileChange,
+  duplicateWarning,
+  onConfirmDuplicates,
+  onCancelDuplicates,
 }: {
   uploadMessage: string;
   isUploading: boolean;
@@ -658,6 +875,9 @@ export function DataSourceCard({
     event: ChangeEvent<HTMLInputElement>,
     period: { month: number; year: number },
   ) => void;
+  duplicateWarning: DuplicateWarning | null;
+  onConfirmDuplicates: () => void;
+  onCancelDuplicates: () => void;
 }) {
   const [isPickingPeriod, setIsPickingPeriod] = useState(false);
   const [pendingMonth, setPendingMonth] = useState(currentDate.getMonth() + 1);
@@ -791,6 +1011,71 @@ export function DataSourceCard({
                 className="rounded-md bg-indigo-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-800"
               >
                 Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {duplicateWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-lg bg-white dark:bg-gray-900 p-6 shadow-lg">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Duplicate Employee Numbers
+              </h3>
+              <button
+                type="button"
+                onClick={onCancelDuplicates}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <IoClose className="h-5 w-5" />
+              </button>
+            </div>
+
+            <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+              {duplicateWarning.duplicates.length} employee number(s) appear
+              more than once in {duplicateWarning.fileName}. Upload anyway
+              keeps only the first row of each, or cancel to fix the file.
+            </p>
+
+            <div className="mb-6 max-h-60 overflow-y-auto rounded-md border border-gray-200 dark:border-gray-700">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-gray-50 dark:bg-gray-800 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  <tr>
+                    <th className="px-3 py-2">EmpNo</th>
+                    <th className="px-3 py-2">Excel Rows</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800 text-gray-800 dark:text-gray-200">
+                  {duplicateWarning.duplicates.map((duplicate) => (
+                    <tr key={duplicate.empNo}>
+                      <td className="px-3 py-2 font-medium">
+                        {duplicate.empNo}
+                      </td>
+                      <td className="px-3 py-2">
+                        {duplicate.rowRefs.join(", ")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={onCancelDuplicates}
+                className="rounded-md px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 transition hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={onConfirmDuplicates}
+                className="rounded-md bg-indigo-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-800"
+              >
+                Upload Anyway
               </button>
             </div>
           </div>

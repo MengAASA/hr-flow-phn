@@ -879,6 +879,9 @@ export default function ManpowerBreakdownComponent() {
     isUploading,
     isLoadingSavedData,
     handleFileUpload,
+    duplicateWarning,
+    confirmDuplicateUpload,
+    cancelDuplicateUpload,
   } = useManpowerEmployees(() => {
     setSelectedPlant("All Plants");
     setSelectedDepartment("All Departments");
@@ -963,11 +966,10 @@ export default function ManpowerBreakdownComponent() {
     (employee) => employee.employeeType === "NON EXECUTIVE",
   ).length;
   const localCount = activeEmployees.filter(
-    (employee) => employee.citizenship === "MALAYSIAN",
+    (employee) => employee.citizenship === "LOCAL",
   ).length;
   const foreignCount = activeEmployees.filter(
-    (employee) =>
-      employee.citizenship !== "" && employee.citizenship !== "MALAYSIAN",
+    (employee) => employee.citizenship === "FOREIGN",
   ).length;
 
   const permanentCount = activeEmployees.filter(
@@ -1155,6 +1157,9 @@ export default function ManpowerBreakdownComponent() {
         employeeCount={employees.length}
         fileInputRef={fileInputRef}
         onFileChange={handleFileUpload}
+        duplicateWarning={duplicateWarning}
+        onConfirmDuplicates={confirmDuplicateUpload}
+        onCancelDuplicates={cancelDuplicateUpload}
       />
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 shadow-sm">
