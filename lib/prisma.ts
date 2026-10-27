@@ -13,6 +13,10 @@ function createPrismaClient(): PrismaClient {
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE_NAME,
     connectionLimit: 20,
+    // MySQL 8's caching_sha2_password needs the server's RSA key for the first
+    // login after a MySQL restart (its auth cache is empty). Without this, the
+    // pool can't open connections until someone logs in another way.
+    allowPublicKeyRetrieval: true,
   });
 
   return new PrismaClient({
