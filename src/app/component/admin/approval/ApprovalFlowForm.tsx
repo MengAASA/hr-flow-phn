@@ -37,6 +37,24 @@ const APPROVAL_MODE_OPTIONS = [
   { id: "ANY", name: "Any one approver" },
 ];
 
+const REQUESTER_DIVISION_MODE_OPTIONS = [
+  {
+    id: "ALL",
+    name: "All requesters",
+    description: "Every requester goes through this step.",
+  },
+  {
+    id: "ONLY",
+    name: "Only these divisions",
+    description: "Only requesters from the divisions selected below.",
+  },
+  {
+    id: "EXCEPT",
+    name: "All except these divisions",
+    description: "Every requester outside the divisions selected below.",
+  },
+];
+
 const STEP_TYPE_OPTIONS = [
   {
     id: "APPROVER",
@@ -87,6 +105,8 @@ export default function ApprovalFlowForm({
     formFieldKey: "",
     approvalMode: "ALL",
     stepType: "APPROVER",
+    requesterDivisionMode: "ALL",
+    requesterDivisions: [] as string[],
   });
   const [users, setUsers] = useState<UserType[]>([]);
   const [loading, setLoading] = useState(false);
@@ -100,23 +120,31 @@ export default function ApprovalFlowForm({
       ? [...divisions, savedDivision]
       : divisions;
 
+  // Same for the requester-division condition: keep any saved division that
+  // has since been deactivated, so it can still be seen and removed.
+  const requesterDivisionMenu = [
+    ...divisions,
+    ...(selectedStep?.requesterDivisions ?? [])
+      .map((r) => r.division)
+      .filter(
+        (d): d is Division => !!d && !divisions.some((x) => x.id === d.id),
+      ),
+  ];
+
   useEffect(() => {
     if (selectedStep) {
+      const divisionId = selectedStep.divisionId?.toString() ?? "";
+      const departmentId = selectedStep.departmentId?.toString() ?? "";
       setData({
         formTypeId: selectedStep.formTypeId.toString(),
         order: selectedStep.order.toString(),
         role: selectedStep.role,
         fallbackRole: selectedStep.fallbackRole || "",
         combineWithFallback: selectedStep.combineWithFallback ?? false,
-        division: selectedStep.divisionId
-          ? selectedStep.divisionId.toString()
-          : "",
-        department: selectedStep.department
-          ? selectedStep.department.name.toString()
-          : "",
-        section: selectedStep.section
-          ? selectedStep.section.name.toString()
-          : "",
+        division: divisionId,
+        // Ids, not names: the API saves these as numbers.
+        department: departmentId,
+        section: selectedStep.sectionId?.toString() ?? "",
         approver: selectedStep.approvalStepApprovers
           ? selectedStep.approvalStepApprovers.map((a) => a.user.id.toString())
           : [],
@@ -124,8 +152,17 @@ export default function ApprovalFlowForm({
         formFieldKey: selectedStep.formFieldKey || "",
         approvalMode: selectedStep.approvalMode || "ALL",
         stepType: selectedStep.stepType || "APPROVER",
+        requesterDivisionMode: selectedStep.requesterDivisionMode || "ALL",
+        requesterDivisions: (selectedStep.requesterDivisions ?? []).map((r) =>
+          r.divisionId.toString(),
+        ),
       });
+      // Load the department/section menus for the saved scope so the
+      // dropdowns can show names for the saved ids.
+      setSelectedDivision(divisionId);
+      setSelectedDepartment(departmentId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStep]);
 
   useEffect(() => {
@@ -147,6 +184,13 @@ export default function ApprovalFlowForm({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (
+      data.requesterDivisionMode !== "ALL" &&
+      data.requesterDivisions.length === 0
+    ) {
+      toast.error("Select at least one requester division, or choose All requesters");
+      return;
+    }
     const url = selectedStep
       ? withBasePath(`/api/approval-flow/${selectedStep.id}`)
       : withBasePath(`/api/approval-flow`);
@@ -255,6 +299,75 @@ export default function ApprovalFlowForm({
                 />
               </div>
             </div>
+          </section>
+
+          <div className="w-full border-t border-gray-200 dark:border-gray-700" />
+
+          {/* Applies To */}
+          <section className="flex flex-col gap-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-indigo-800 dark:text-indigo-400">
+                Applies To
+              </h3>
+              <p className="text-[0.7rem] text-gray-500 dark:text-gray-400 mt-1">
+                Which requesters go through this step, based on the requester&apos;s
+                division. Requesters it doesn&apos;t apply to skip straight to the next step.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-3">
+              {REQUESTER_DIVISION_MODE_OPTIONS.map((option) => (
+                <label
+                  key={option.id}
+                  className={`flex items-start gap-x-2 rounded-md border px-3 py-2 cursor-pointer transition-colors ${
+                    data.requesterDivisionMode === option.id
+                      ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40"
+                      : "border-gray-300 dark:border-gray-600 hover:border-indigo-400"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="requesterDivisionMode"
+                    value={option.id}
+                    checked={data.requesterDivisionMode === option.id}
+                    onChange={() =>
+                      setData((prev) => ({
+                        ...prev,
+                        requesterDivisionMode: option.id,
+                      }))
+                    }
+                    className="mt-0.5 accent-indigo-600"
+                  />
+                  <span className="flex flex-col">
+                    <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                      {option.name}
+                    </span>
+                    <span className="text-[0.7rem] text-gray-500 dark:text-gray-400">
+                      {option.description}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            {data.requesterDivisionMode !== "ALL" && (
+              <div className={styleLink}>
+                <Label
+                  name="Requester Divisions"
+                  htmlFor="requesterDivisions"
+                  className="block text-sm font-medium text-gray-900 dark:text-gray-100"
+                />
+                <MultiComboBox
+                  menu={requesterDivisionMenu.map((d) => ({ id: d.id, name: d.name }))}
+                  selectedValues={data.requesterDivisions}
+                  onSelect={(items) => {
+                    setData((prev) => ({
+                      ...prev,
+                      requesterDivisions: items.map((i) => i.id.toString()),
+                    }));
+                  }}
+                />
+              </div>
+            )}
           </section>
 
           <div className="w-full border-t border-gray-200 dark:border-gray-700" />

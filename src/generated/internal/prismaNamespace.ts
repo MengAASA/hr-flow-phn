@@ -408,6 +408,7 @@ export const ModelName = {
   FileAttachment: 'FileAttachment',
   ManpowerUpload: 'ManpowerUpload',
   ApprovalFlowStep: 'ApprovalFlowStep',
+  ApprovalStepRequesterDivision: 'ApprovalStepRequesterDivision',
   Approval: 'Approval',
   PasswordResetToken: 'PasswordResetToken',
   ApprovalStepApprover: 'ApprovalStepApprover',
@@ -428,7 +429,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userRole" | "formTypeAdmin" | "division" | "department" | "section" | "formType" | "formSubmission" | "fileAttachment" | "manpowerUpload" | "approvalFlowStep" | "approval" | "passwordResetToken" | "approvalStepApprover" | "sexualHarassmentReport" | "sexualHarassmentAttachment"
+    modelProps: "user" | "userRole" | "formTypeAdmin" | "division" | "department" | "section" | "formType" | "formSubmission" | "fileAttachment" | "manpowerUpload" | "approvalFlowStep" | "approvalStepRequesterDivision" | "approval" | "passwordResetToken" | "approvalStepApprover" | "sexualHarassmentReport" | "sexualHarassmentAttachment"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1158,6 +1159,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ApprovalStepRequesterDivision: {
+      payload: Prisma.$ApprovalStepRequesterDivisionPayload<ExtArgs>
+      fields: Prisma.ApprovalStepRequesterDivisionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ApprovalStepRequesterDivisionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalStepRequesterDivisionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ApprovalStepRequesterDivisionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalStepRequesterDivisionPayload>
+        }
+        findFirst: {
+          args: Prisma.ApprovalStepRequesterDivisionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalStepRequesterDivisionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ApprovalStepRequesterDivisionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalStepRequesterDivisionPayload>
+        }
+        findMany: {
+          args: Prisma.ApprovalStepRequesterDivisionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalStepRequesterDivisionPayload>[]
+        }
+        create: {
+          args: Prisma.ApprovalStepRequesterDivisionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalStepRequesterDivisionPayload>
+        }
+        createMany: {
+          args: Prisma.ApprovalStepRequesterDivisionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.ApprovalStepRequesterDivisionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalStepRequesterDivisionPayload>
+        }
+        update: {
+          args: Prisma.ApprovalStepRequesterDivisionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalStepRequesterDivisionPayload>
+        }
+        deleteMany: {
+          args: Prisma.ApprovalStepRequesterDivisionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ApprovalStepRequesterDivisionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.ApprovalStepRequesterDivisionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalStepRequesterDivisionPayload>
+        }
+        aggregate: {
+          args: Prisma.ApprovalStepRequesterDivisionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateApprovalStepRequesterDivision>
+        }
+        groupBy: {
+          args: Prisma.ApprovalStepRequesterDivisionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ApprovalStepRequesterDivisionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ApprovalStepRequesterDivisionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ApprovalStepRequesterDivisionCountAggregateOutputType> | number
+        }
+      }
+    }
     Approval: {
       payload: Prisma.$ApprovalPayload<ExtArgs>
       fields: Prisma.ApprovalFieldRefs
@@ -1670,11 +1737,21 @@ export const ApprovalFlowStepScalarFieldEnum = {
   formFieldKey: 'formFieldKey',
   approvalMode: 'approvalMode',
   stepType: 'stepType',
+  requesterDivisionMode: 'requesterDivisionMode',
   createdAt: 'createdAt',
   userId: 'userId'
 } as const
 
 export type ApprovalFlowStepScalarFieldEnum = (typeof ApprovalFlowStepScalarFieldEnum)[keyof typeof ApprovalFlowStepScalarFieldEnum]
+
+
+export const ApprovalStepRequesterDivisionScalarFieldEnum = {
+  id: 'id',
+  stepId: 'stepId',
+  divisionId: 'divisionId'
+} as const
+
+export type ApprovalStepRequesterDivisionScalarFieldEnum = (typeof ApprovalStepRequesterDivisionScalarFieldEnum)[keyof typeof ApprovalStepRequesterDivisionScalarFieldEnum]
 
 
 export const ApprovalScalarFieldEnum = {
@@ -2005,6 +2082,13 @@ export type EnumApprovalStepTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'RequesterDivisionMode'
+ */
+export type EnumRequesterDivisionModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RequesterDivisionMode'>
+    
+
+
+/**
  * Reference to a field of type 'SexualHarassmentReportStatus'
  */
 export type EnumSexualHarassmentReportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SexualHarassmentReportStatus'>
@@ -2179,6 +2263,7 @@ export type GlobalOmitConfig = {
   fileAttachment?: Prisma.FileAttachmentOmit
   manpowerUpload?: Prisma.ManpowerUploadOmit
   approvalFlowStep?: Prisma.ApprovalFlowStepOmit
+  approvalStepRequesterDivision?: Prisma.ApprovalStepRequesterDivisionOmit
   approval?: Prisma.ApprovalOmit
   passwordResetToken?: Prisma.PasswordResetTokenOmit
   approvalStepApprover?: Prisma.ApprovalStepApproverOmit

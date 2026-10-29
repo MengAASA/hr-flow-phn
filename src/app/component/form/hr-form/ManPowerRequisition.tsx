@@ -5,6 +5,7 @@ import Dropdown from "../../ui/Dropdown";
 import {
   categoryManPower,
   designation,
+  manpowerReasonOptions,
   reportingToOptions,
   workLocation,
 } from "../../../../../lib/data";
@@ -205,15 +206,8 @@ export default function ManPower({
     });
   };
 
-  const reasonOptions: { key: ReasonKey; label: string }[] = [
-    {
-      key: "productionVolumeIncrease",
-      label: "Production Volume Increase (Item)",
-    },
-    { key: "newProject", label: "New Project" },
-    { key: "machineFaulty", label: "Machine Faulty" },
-    { key: "other", label: "Other" },
-  ];
+  const reasonOptions: readonly { key: ReasonKey; label: string }[] =
+    manpowerReasonOptions;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

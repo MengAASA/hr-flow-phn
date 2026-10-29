@@ -91,6 +91,7 @@ export default async function Admin() {
                 user: { omit: { password: true } },
               },
             },
+            requesterDivisions: { include: { division: true } },
           },
         }),
     prisma.formSubmission.findMany({

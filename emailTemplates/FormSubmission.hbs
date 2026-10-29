@@ -168,6 +168,12 @@
                 <td class="label">Submission Date:</td>
                 <td>{{submittedAt}}</td>
               </tr>
+              {{#each requestDetails}}
+              <tr>
+                <td class="label">{{this.label}}:</td>
+                <td>{{this.value}}</td>
+              </tr>
+              {{/each}}
               <tr>
                 <td class="label">Current Status:</td>
                 <td>{{status}}</td>
@@ -195,7 +201,7 @@
                 </v:roundrect>
               <![endif]-->
               <!--[if !mso]><!-- -->
-                <a href="{{requestLink}}" class="btn"   style="color:#ffffff !important; text-decoration:none !important;"View Request</a>
+                <a href="{{requestLink}}" class="btn" style="color:#ffffff !important; text-decoration:none !important;">View Request</a>
               <!--<![endif]-->
             {{/if}}
 

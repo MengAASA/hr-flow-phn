@@ -41,18 +41,28 @@ export async function getOrgUnitUsage(
         ? { departmentId: id }
         : { sectionId: id };
 
-  const [children, users, approvalSteps, submissions] = await Promise.all([
-    level === "division"
-      ? prisma.department.count({ where: { divisionId: id } })
-      : level === "department"
-        ? prisma.section.count({ where: { departmentId: id } })
+  const [children, users, approverSteps, requesterSteps, submissions] =
+    await Promise.all([
+      level === "division"
+        ? prisma.department.count({ where: { divisionId: id } })
+        : level === "department"
+          ? prisma.section.count({ where: { departmentId: id } })
+          : Promise.resolve(0),
+      prisma.user.count({ where: fk }),
+      prisma.approvalFlowStep.count({ where: fk }),
+      // Steps whose requester-division condition lists this division
+      level === "division"
+        ? prisma.approvalStepRequesterDivision.count({ where: { divisionId: id } })
         : Promise.resolve(0),
-    prisma.user.count({ where: fk }),
-    prisma.approvalFlowStep.count({ where: fk }),
-    submissionsReferencing(level, id),
-  ]);
+      submissionsReferencing(level, id),
+    ]);
 
-  return { children, users, approvalSteps, submissions };
+  return {
+    children,
+    users,
+    approvalSteps: approverSteps + requesterSteps,
+    submissions,
+  };
 }
 
 export function isOrgUnitInUse(usage: OrgUnitUsage): boolean {

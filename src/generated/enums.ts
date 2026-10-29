@@ -9,6 +9,15 @@
 * 🟢 You can import this file directly.
 */
 
+export const RequesterDivisionMode = {
+  ALL: 'ALL',
+  ONLY: 'ONLY',
+  EXCEPT: 'EXCEPT'
+} as const
+
+export type RequesterDivisionMode = (typeof RequesterDivisionMode)[keyof typeof RequesterDivisionMode]
+
+
 export const ApproverSourceType = {
   ROLE: 'ROLE',
   MANUAL: 'MANUAL',

@@ -1,6 +1,7 @@
 import { requireFullAdmin } from "@/src/lib/admin-access";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
+import { parseRequesterCondition } from "@/lib/approverResolution";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,6 +23,8 @@ export async function POST(req: NextRequest) {
       formFieldKey,
       approvalMode,
       stepType,
+      requesterDivisionMode,
+      requesterDivisions,
     } = body;
 
     // Treat "0" or "" as null
@@ -29,6 +32,14 @@ export async function POST(req: NextRequest) {
       if (!value || value === "0") return null;
       return Number(value);
     };
+
+    const requesterCondition = parseRequesterCondition(
+      requesterDivisionMode,
+      requesterDivisions,
+    );
+    if ("error" in requesterCondition) {
+      return NextResponse.json({ error: requesterCondition.error }, { status: 400 });
+    }
 
     const newApprovalFlow = await prisma.approvalFlowStep.create({
       data: {
@@ -46,6 +57,10 @@ export async function POST(req: NextRequest) {
         formFieldKey: formFieldKey || null,
         approvalMode: approvalMode || "ALL",
         stepType: stepType === "NOTIFY" ? "NOTIFY" : "APPROVER",
+        requesterDivisionMode: requesterCondition.mode,
+        requesterDivisions: {
+          create: requesterCondition.divisionIds.map((divisionId) => ({ divisionId })),
+        },
       },
     });
 
@@ -85,6 +100,7 @@ export async function GET() {
         approvalStepApprovers: {
           include: { user: true },
         },
+        requesterDivisions: { include: { division: true } },
       },
     });
     return NextResponse.json(approvalFlows);

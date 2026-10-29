@@ -8,6 +8,7 @@ import {
   applyFallbackRole,
   buildRoleWhere,
   resolveFormFieldApprover,
+  stepAppliesToRequester,
 } from "@/lib/approverResolution";
 import { generateUniqueReferenceId } from "@/lib/submission-code";
 
@@ -65,10 +66,13 @@ export async function POST(req: NextRequest) {
     });
 
     // ── Fetch approval flow steps ──
-    const approvalFlowSteps = await prisma.approvalFlowStep.findMany({
-      where: { formTypeId: Number(formTypeId) },
-      orderBy: { order: "asc" },
-    });
+    const approvalFlowSteps = (
+      await prisma.approvalFlowStep.findMany({
+        where: { formTypeId: Number(formTypeId) },
+        include: { requesterDivisions: { select: { divisionId: true } } },
+        orderBy: { order: "asc" },
+      })
+    ).filter((step) => stepAppliesToRequester(step, currentUser.divisionId));
 
     if (approvalFlowSteps.length === 0) {
       return NextResponse.json(

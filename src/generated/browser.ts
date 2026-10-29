@@ -73,6 +73,11 @@ export type ManpowerUpload = Prisma.ManpowerUploadModel
  */
 export type ApprovalFlowStep = Prisma.ApprovalFlowStepModel
 /**
+ * Model ApprovalStepRequesterDivision
+ * 
+ */
+export type ApprovalStepRequesterDivision = Prisma.ApprovalStepRequesterDivisionModel
+/**
  * Model Approval
  * 
  */

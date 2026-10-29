@@ -1,4 +1,4 @@
-import { Prisma, Role, User } from "@/generated/client";
+import { Prisma, RequesterDivisionMode, Role, User } from "@/generated/client";
 import { prisma } from "./prisma";
 
 export type StepScope = {
@@ -6,6 +6,49 @@ export type StepScope = {
   departmentId: number | null;
   sectionId: number | null;
 };
+
+export type RequesterCondition = {
+  requesterDivisionMode: RequesterDivisionMode;
+  requesterDivisions: { divisionId: number }[];
+};
+
+/**
+ * Whether a step is part of the chain for this requester, based on the
+ * step's requester-division condition (ALL / ONLY listed / EXCEPT listed).
+ * A requester with no division never matches a listed division.
+ */
+export function stepAppliesToRequester(
+  step: RequesterCondition,
+  requesterDivisionId: number | null,
+): boolean {
+  if (step.requesterDivisionMode === "ALL") return true;
+
+  const listed = step.requesterDivisions.some(
+    (d) => requesterDivisionId !== null && d.divisionId === requesterDivisionId,
+  );
+  return step.requesterDivisionMode === "ONLY" ? listed : !listed;
+}
+
+/**
+ * Validates the requester-division condition sent by the approval flow admin
+ * form. ONLY/EXCEPT need at least one division; ALL stores none.
+ */
+export function parseRequesterCondition(
+  mode: unknown,
+  divisionIds: unknown,
+): { mode: RequesterDivisionMode; divisionIds: number[] } | { error: string } {
+  const parsedMode: RequesterDivisionMode =
+    mode === "ONLY" || mode === "EXCEPT" ? mode : "ALL";
+  if (parsedMode === "ALL") return { mode: "ALL", divisionIds: [] };
+
+  const ids = Array.isArray(divisionIds)
+    ? [...new Set(divisionIds.map(Number).filter((n) => Number.isInteger(n) && n > 0))]
+    : [];
+  if (ids.length === 0) {
+    return { error: "Select at least one requester division for this condition." };
+  }
+  return { mode: parsedMode, divisionIds: ids };
+}
 
 export type FallbackConfig = {
   fallbackRole: Role | null;

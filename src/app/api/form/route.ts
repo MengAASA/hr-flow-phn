@@ -9,28 +9,20 @@ import path from "path";
 import { sendMailSafely } from "../../../../lib/emailService";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/src/lib/auth-options";
-import { ApprovalStepApprover, User } from "@/generated/client";
 import { formatFileSize, MAX_FORM_ATTACHMENT_BYTES } from "@/lib/uploadLimits";
-import {
-  applyFallbackRole,
-  buildRoleWhere,
-  resolveFormFieldApprover,
-} from "@/lib/approverResolution";
+import { resolveApprovalChain } from "@/lib/approvalChain";
+import { getRequestDetailRows } from "@/lib/emailRequestDetails";
 import { advancePastNotifySteps } from "@/lib/notifyStepCascade";
 import { generateUniqueReferenceId } from "@/lib/submission-code";
 
 const emailFrom = process.env.EMAIL;
 const webLink = process.env.NEXTAUTH_URL;
 
-type ManualApproverWithUser = ApprovalStepApprover & { user: User };
 type FormData = {
   division: string;
   department: string;
   section: string;
 };
-
-const MANPOWER_REQUISITION_FORM_NAME = "Man Power Requisition";
-const HUMAN_CAPITAL_DIVISION_NAME = "HUMAN CAPITAL AND ESG";
 
 export async function POST(req: NextRequest) {
   try {
@@ -110,11 +102,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const requesterDivision = findUser.divisionId
-      ? await prisma.division.findUnique({
-          where: { id: Number(findUser.divisionId) },
-        })
-      : null;
+    // ✅ Resolve the approval chain BEFORE creating the submission, so a flow
+    // with no valid approvers doesn't leave an orphaned submission behind.
+    const chain = await resolveApprovalChain({
+      formTypeId: formId,
+      formTypeName: formType.name,
+      requester: findUser,
+      formData: data,
+    });
+
+    if ("error" in chain) {
+      return NextResponse.json({ error: chain.error }, { status: 400 });
+    }
+
+    const activeSteps = chain.entries.flatMap((entry) =>
+      entry.status === "ACTIVE" ? [entry] : [],
+    );
+
+    if (activeSteps.length === 0) {
+      return NextResponse.json(
+        { error: "No valid approvers found for this form submission." },
+        { status: 400 },
+      );
+    }
 
     // ✅ Create Form Submission
     const formSubmission = await prisma.formSubmission.create({
@@ -156,135 +166,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ✅ Fetch Approval Flow Steps for this form
-    const approvalFlowSteps = await prisma.approvalFlowStep.findMany({
-      where: { formTypeId: formId },
-      orderBy: { order: "asc" },
-    });
-
-    if (approvalFlowSteps.length === 0) {
-      console.warn(`⚠️ No approval flow steps found for formTypeId: ${formId}`);
-    }
-
-    const assignedApprovers: number[] = [];
-    let firstActiveStepOrder: number | null = null;
-    const isHumanCapitalManpowerFlow =
-      formType.name === MANPOWER_REQUISITION_FORM_NAME &&
-      requesterDivision?.name?.trim().toUpperCase() ===
-        HUMAN_CAPITAL_DIVISION_NAME;
-
-    const shouldSkipFirstDepartmentApprovalForManpower =
-      formType.name === "Man Power Requisition" &&
-      findUser.role === "HEAD_OF_DEPARTMENT";
-    let hasSkippedInitialDepartmentStep = false;
-
-    for (const step of approvalFlowSteps) {
-      // Human Capital requisitions follow the escalation chain configured for
-      // that division (the explicitly scoped steps). The generic unscoped
-      // steps are skipped: they resolve to the requester's own department and
-      // division heads, who already appear further down the configured chain,
-      // and would otherwise be pulled to the front out of hierarchy order.
-      if (
-        isHumanCapitalManpowerFlow &&
-        step.divisionId === null &&
-        step.departmentId === null &&
-        step.sectionId === null
-      ) {
-        continue;
-      }
-
-      if (
-        shouldSkipFirstDepartmentApprovalForManpower &&
-        !hasSkippedInitialDepartmentStep &&
-        firstActiveStepOrder === null &&
-        step.role === "HEAD_OF_DEPARTMENT"
-      ) {
-        hasSkippedInitialDepartmentStep = true;
-        continue;
-      }
-
-      // 1️⃣ Load manual approvers
-      const manualApprovers = await prisma.approvalStepApprover.findMany({
-        where: { stepId: step.id },
-        include: { user: true },
-      });
-
-      let approvers: User[] = [];
-
-      if (step.approverSource === "FORM_FIELD" && step.formFieldKey) {
-        // Approver comes from a value the requester picked on the form itself
-        const resolved = await resolveFormFieldApprover(data, step, findUser);
-        if ("error" in resolved) {
-          return NextResponse.json({ error: resolved.error }, { status: 400 });
-        }
-        approvers = [resolved.approver];
-      } else if (step.approverSource === "MANUAL" || manualApprovers.length > 0) {
-        // 1️⃣ If manual approvers exist → use them
-        approvers = manualApprovers.map((a: ManualApproverWithUser) => a.user);
-      } else {
-        // 2️⃣ Try to find normal approvers based on role
-        approvers = await prisma.user.findMany({
-          where: buildRoleWhere(step.role, step, findUser, assignedApprovers),
-        });
-
-        // 3️⃣ 🔥 Legacy fallback for STEP 1 (kept as-is for backward compatibility)
-        if (
-          approvers.length === 0 &&
-          step.order === 1 &&
-          step.role === "HEAD_OF_DEPARTMENT"
-        ) {
-          console.warn(
-            `⚠️ No HEAD_OF_DEPARTMENT found. Falling back to HEAD_OF_DIVISION`,
-          );
-
-          approvers = await prisma.user.findMany({
-            where: {
-              role: "HEAD_OF_DIVISION",
-              divisionId: findUser.divisionId,
-              id: { notIn: assignedApprovers },
-            },
-          });
-        }
-
-        // 4️⃣ Admin-configured fallback/combine role (generic, any step/form)
-        approvers = await applyFallbackRole(approvers, step, findUser, assignedApprovers);
-      }
-      // Prevent duplicates
-      approvers = approvers.filter(
-        (a: User) => a.id !== findUser.id && !assignedApprovers.includes(a.id),
-      );
-
-      if (approvers.length === 0) {
-        continue;
-      }
-
-      assignedApprovers.push(...approvers.map((a: User) => a.id));
-
-      if (firstActiveStepOrder === null) {
-        firstActiveStepOrder = step.order;
-      }
-
-      // 3️⃣ Create all approvals for this step with deadline for step 1
-      await prisma.approval.createMany({
-        data: approvers.map((u: User) => ({
+    // ✅ Create the approvals: the first active step is PENDING, the rest WAITING
+    const firstActiveStepOrder = activeSteps[0].step.order;
+    await prisma.approval.createMany({
+      data: activeSteps.flatMap(({ step, approvers }) =>
+        approvers.map((u) => ({
           submissionId: formSubmission.id,
           approverId: u.id,
           stepOrder: step.order,
           status: step.order === firstActiveStepOrder ? "PENDING" : "WAITING",
-          // deadline: step.order === 1 ? new Date(Date.now() + 5 * 60 * 1000) : null,
-          // escalated: false,
         })),
-      });
-    }
-
-    if (firstActiveStepOrder === null) {
-      return NextResponse.json(
-        { error: "No valid approvers found for this form submission." },
-        { status: 400 },
-      );
-    }
+      ),
+    });
 
     const requestLink = `${webLink}/dashboard/approval?id=${formSubmission.id}&name=${formType.name}`;
+    // Form-specific rows for the emails' details table (e.g. reason of requisition)
+    const requestDetails = getRequestDetailRows(formType.name, data);
 
     // ✅ Fetch the first active approvers, auto-resolving any leading
     // NOTIFY-only steps along the way.
@@ -298,6 +195,7 @@ export async function POST(req: NextRequest) {
       departmentName: findDepartment?.name ?? "-",
       submittedAt: new Date(formSubmission.createdAt).toLocaleString(),
       requestLink,
+      requestDetails,
     });
     const firstStepApprovers = cascadeResult.finalized ? [] : cascadeResult.approvers;
 
@@ -317,6 +215,7 @@ export async function POST(req: NextRequest) {
         status: formSubmission.status,
         requestLink: `${webLink}/dashboard/approval?id=${formSubmission.id}&name=${formType.name}`,
         isApprover: false,
+        requestDetails,
       },
     };
 
@@ -350,6 +249,7 @@ export async function POST(req: NextRequest) {
           status: formSubmission.status,
           approvalLink: `${webLink}/dashboard/approval?id=${formSubmission.id}&name=${formType.name}`,
           isApprover: true,
+          requestDetails,
         },
       };
 

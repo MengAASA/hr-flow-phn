@@ -37,6 +37,7 @@ A step can also have:
 
 - **A fallback role**, used when nobody matches, or combined with the main role when `combineWithFallback` is on.
 - **An approval mode**: `ALL` (every approver must approve) or `ANY` (one approval completes the step).
+- **An "Applies To" condition** on the requester's division: all requesters, only requesters from listed divisions, or all requesters except listed divisions. A requester it doesn't apply to skips the step. This is separate from the division/department/section scope, which decides who *approves*. Stored as `ApprovalFlowStep.requesterDivisionMode` and `ApprovalStepRequesterDivision`.
 - **A step type**: `APPROVER` (must act) or `NOTIFY` (receives an FYI email and the step is passed automatically).
 
 The requester is never their own approver, and a user is not assigned to more than one step of the same submission. The logic lives in [lib/approverResolution.ts](lib/approverResolution.ts) and [src/app/api/form/route.ts](src/app/api/form/route.ts).
@@ -47,7 +48,7 @@ These rules are hard-coded and matched by the form type's **name**, so renaming 
 
 | Form | Special behaviour |
 | --- | --- |
-| Man Power Requisition | A Head of Department requester skips the first Head of Department step. Requesters in the "HUMAN CAPITAL AND ESG" division use only the steps explicitly scoped to a unit. |
+| Man Power Requisition | A Head of Department requester skips the first Head of Department step. (Division-specific routing, such as Human Capital skipping the requester's own HOD/HOD-of-division steps, is configured with each step's "Applies To" condition, not hard-coded.) |
 | Grievance Report | Has its own submit route. A rejection passes the report to the next step instead of ending it, and only the last approver's rejection is final. One approval approves the whole report. Deadlines are 5, 5, 7 days and 10 days on the last step. |
 | Employee Monthly Performance Review | Moves through stages kept in `formData.reviewStage`: evaluator submits, HOD approves, the employee fills in comments, HCD acknowledges. Matched by a name containing "employee monthly performance". |
 | Sexual Harassment Report | Not a `FormSubmission`. It has its own tables, a public submit page, and separate access rules (see below). |
@@ -164,6 +165,7 @@ Key API routes:
 | `POST /api/approval-form/action` | Approve or reject |
 | `GET /api/approval-form/fetch` | Pending, history and own submissions for the Approval page |
 | `/api/approval-flow`, `/api/form-type`, `/api/user` | Admin configuration |
+| `GET /api/approval-flow/preview` | Dry-run approval chain for a form type and requester (full admin) |
 | `POST /api/public/sexual-harassment-report` | Public harassment report submission |
 | `/api/compliance/sexual-harassment` | Compliance officer views and status updates |
 | `GET /api/cron/escalate-overdue` | Escalation run, called by the scheduler |
@@ -187,7 +189,7 @@ Defined in [prisma/schema.prisma](prisma/schema.prisma).
 1. Build the form component under `src/app/component/form/hr-form/`.
 2. Register it in [lib/hrformcomponents.tsx](lib/hrformcomponents.tsx). The key is the form type name in lower case with non-alphanumeric characters replaced by dashes (for example "Man Power Requisition" becomes `man-power-requisition`).
 3. Create the form type with the matching name in Admin → Form Type.
-4. Configure its steps in Admin → Approval Flow.
+4. Configure its steps in Admin → Approval Flow, then check the result for a few requesters with **Preview Chain** on the same page (it runs the same resolver as submission, in [lib/approvalChain.ts](lib/approvalChain.ts)).
 5. If a step should use a staff ID chosen on the form, add that field to `FormApproverFieldOptions` in the same file.
 
 ## Background job and email
@@ -211,7 +213,7 @@ pm2 restart hr-flow-phn      # first time: pm2 start ecosystem.config.js
 
 ## Things to know before changing code
 
-- **Form type names are part of the logic.** "Man Power Requisition", "Grievance Report", "Sexual Harassment Report", names containing "employee monthly performance", and the division "HUMAN CAPITAL AND ESG" are all compared as text.
+- **Form type names are part of the logic.** "Man Power Requisition", "Grievance Report", "Sexual Harassment Report" and names containing "employee monthly performance" are all compared as text. Org units are never matched by name in routing, so divisions, departments and sections can be renamed safely.
 - **Approval mode is ignored for Grievance Report and Employee Review.** Their flow is fixed in [src/app/api/approval-form/action/route.ts](src/app/api/approval-form/action/route.ts).
 - **The session cookie is always `Secure`** (`__Secure-next-auth.session-token`), so the app is meant to be served over HTTPS.
 - **`GET /api/user` returns fewer fields to non-admins.** They get a basic directory (name, staff ID, role, designation, division, department, section) and admins get the full record. If a field on a form only fills in for admins, check this first, and add the missing field to the non-admin `select` in [src/app/api/user/route.ts](src/app/api/user/route.ts).

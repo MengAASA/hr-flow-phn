@@ -11,6 +11,7 @@ import {
   applyFallbackRole,
   buildRoleWhere,
   resolveFormFieldApprover,
+  stepAppliesToRequester,
 } from "../../../../../lib/approverResolution";
 import { generateUniqueReferenceId } from "../../../../../lib/submission-code";
 
@@ -77,10 +78,13 @@ export async function POST(req: NextRequest) {
     }
 
     // ✅ Resolve all approvers BEFORE creating the submission so we can fail early
-    const approvalFlowSteps = await prisma.approvalFlowStep.findMany({
-      where: { formTypeId: formId },
-      orderBy: { order: "asc" },
-    });
+    const approvalFlowSteps = (
+      await prisma.approvalFlowStep.findMany({
+        where: { formTypeId: formId },
+        include: { requesterDivisions: { select: { divisionId: true } } },
+        orderBy: { order: "asc" },
+      })
+    ).filter((step) => stepAppliesToRequester(step, findUser.divisionId));
 
     if (approvalFlowSteps.length === 0) {
       return NextResponse.json(

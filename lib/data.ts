@@ -16,6 +16,18 @@ export const categoryManPower = [
   { id: 3, name: "Temporary" },
 ];
 
+// "Additional" reasons on the Man Power Requisition form. Each key is also the
+// formData field holding that reason's details. Shared with the email details.
+export const manpowerReasonOptions = [
+  {
+    key: "productionVolumeIncrease",
+    label: "Production Volume Increase (Item)",
+  },
+  { key: "newProject", label: "New Project" },
+  { key: "machineFaulty", label: "Machine Faulty" },
+  { key: "other", label: "Other" },
+] as const;
+
 export const roles = [
   { id: "STAFF", name: "Staff" },
   { id: "HEAD_OF_SECTION", name: "Head of Section" },

@@ -62,6 +62,7 @@ export const ModelName = {
   FileAttachment: 'FileAttachment',
   ManpowerUpload: 'ManpowerUpload',
   ApprovalFlowStep: 'ApprovalFlowStep',
+  ApprovalStepRequesterDivision: 'ApprovalStepRequesterDivision',
   Approval: 'Approval',
   PasswordResetToken: 'PasswordResetToken',
   ApprovalStepApprover: 'ApprovalStepApprover',
@@ -228,11 +229,21 @@ export const ApprovalFlowStepScalarFieldEnum = {
   formFieldKey: 'formFieldKey',
   approvalMode: 'approvalMode',
   stepType: 'stepType',
+  requesterDivisionMode: 'requesterDivisionMode',
   createdAt: 'createdAt',
   userId: 'userId'
 } as const
 
 export type ApprovalFlowStepScalarFieldEnum = (typeof ApprovalFlowStepScalarFieldEnum)[keyof typeof ApprovalFlowStepScalarFieldEnum]
+
+
+export const ApprovalStepRequesterDivisionScalarFieldEnum = {
+  id: 'id',
+  stepId: 'stepId',
+  divisionId: 'divisionId'
+} as const
+
+export type ApprovalStepRequesterDivisionScalarFieldEnum = (typeof ApprovalStepRequesterDivisionScalarFieldEnum)[keyof typeof ApprovalStepRequesterDivisionScalarFieldEnum]
 
 
 export const ApprovalScalarFieldEnum = {

@@ -76,6 +76,12 @@
                 <td class="label">Submission Date:</td>
                 <td>{{submittedAt}}</td>
               </tr>
+              {{#each requestDetails}}
+              <tr>
+                <td class="label">{{this.label}}:</td>
+                <td>{{this.value}}</td>
+              </tr>
+              {{/each}}
               <tr>
                 <td class="label">Pending Action By:</td>
                 <td>{{previousApproverName}}</td>

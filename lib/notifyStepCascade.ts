@@ -1,5 +1,6 @@
 import { prisma } from "./prisma";
 import { transporter } from "./emailService";
+import type { RequestDetailRow } from "./emailRequestDetails";
 
 const emailFrom = process.env.EMAIL;
 
@@ -17,6 +18,8 @@ export type NotifyCascadeContext = {
   departmentName: string;
   submittedAt: string;
   requestLink: string;
+  // Form-specific rows for the emails' details table
+  requestDetails?: RequestDetailRow[];
 };
 
 export type NotifyCascadeResult =
@@ -92,6 +95,7 @@ export async function advancePastNotifySteps(
         status: "For Your Information",
         requestLink: ctx.requestLink,
         isApprover: false,
+        requestDetails: ctx.requestDetails,
       },
     };
 
@@ -176,6 +180,7 @@ async function finalizeSubmission(ctx: NotifyCascadeContext) {
       department: ctx.departmentName,
       finalApproverName: lastNotified?.approver.fullname ?? "System",
       requestLink: ctx.requestLink,
+      requestDetails: ctx.requestDetails,
     },
   };
 

@@ -152,6 +152,12 @@
                 <td class="label">Submission Date:</td>
                 <td>{{submittedAt}}</td>
               </tr>
+              {{#each requestDetails}}
+              <tr>
+                <td class="label">{{this.label}}:</td>
+                <td>{{this.value}}</td>
+              </tr>
+              {{/each}}
               <tr>
                 <td class="label">Final Status:</td>
                 <td><strong>REJECTED</strong></td>

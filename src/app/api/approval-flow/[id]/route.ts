@@ -1,6 +1,7 @@
 import { requireFullAdmin } from "@/src/lib/admin-access";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../../lib/prisma";
+import { parseRequesterCondition } from "@/lib/approverResolution";
 
 export async function PUT(
   req: NextRequest,
@@ -26,6 +27,8 @@ export async function PUT(
       formFieldKey,
       approvalMode,
       stepType,
+      requesterDivisionMode,
+      requesterDivisions,
     } = body;
 
     // Treat "0" or "" as null
@@ -33,6 +36,14 @@ export async function PUT(
       if (!value || value === "0") return null;
       return Number(value);
     };
+
+    const requesterCondition = parseRequesterCondition(
+      requesterDivisionMode,
+      requesterDivisions,
+    );
+    if ("error" in requesterCondition) {
+      return NextResponse.json({ error: requesterCondition.error }, { status: 400 });
+    }
 
     const updatedApprovalFlow = await prisma.approvalFlowStep.update({
       where: { id: Number(id) },
@@ -51,6 +62,11 @@ export async function PUT(
         formFieldKey: formFieldKey || null,
         approvalMode: approvalMode || "ALL",
         stepType: stepType === "NOTIFY" ? "NOTIFY" : "APPROVER",
+        requesterDivisionMode: requesterCondition.mode,
+        requesterDivisions: {
+          deleteMany: {},
+          create: requesterCondition.divisionIds.map((divisionId) => ({ divisionId })),
+        },
       },
     });
 

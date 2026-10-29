@@ -3,6 +3,7 @@ import { prisma } from "../../../../../lib/prisma";
 import { transporter } from "../../../../../lib/emailService";
 import { Prisma } from "@/generated/client";
 import { getGrievanceStepDeadline } from "../../../../../lib/grievance-deadline";
+import { getRequestDetailRows } from "../../../../../lib/emailRequestDetails";
 
 const emailFrom = process.env.EMAIL;
 const webLink = process.env.NEXTAUTH_URL;
@@ -153,6 +154,10 @@ export async function GET() {
           ).toLocaleString(),
           approvalLink: `${webLink}/dashboard/approval?id=${firstApproval.submission.id}&name=${firstApproval.submission.formType.name}`,
           previousApproverName: group[0].approver.fullname,
+          requestDetails: getRequestDetailRows(
+            firstApproval.submission.formType.name,
+            firstApproval.submission.formData,
+          ),
         },
       };
 

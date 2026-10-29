@@ -9,6 +9,7 @@ import {
 } from "@/app/types/types";
 import React, { useEffect, useState } from "react";
 import ApprovalFlowForm from "./ApprovalFlowForm";
+import ApprovalChainPreview from "./ApprovalChainPreview";
 import CheckBox from "../../ui/CheckBox";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -44,6 +45,15 @@ export interface ApprovalFlowStep {
   formFieldKey: string | null;
   approvalMode: string;
   stepType: string;
+  requesterDivisionMode: string;
+  requesterDivisions?: ApprovalStepRequesterDivision[];
+}
+
+export interface ApprovalStepRequesterDivision {
+  id: number;
+  stepId: number;
+  divisionId: number;
+  division?: Division;
 }
 
 export interface ApprovalStepApprover {
@@ -112,6 +122,16 @@ function buildStepSummary(item: ApprovalFlowStep) {
   return text;
 }
 
+function buildAppliesToSummary(item: ApprovalFlowStep) {
+  if (item.requesterDivisionMode === "ALL") return null;
+  const names = (item.requesterDivisions ?? [])
+    .map((r) => r.division?.name ?? `#${r.divisionId}`)
+    .join(", ");
+  return item.requesterDivisionMode === "ONLY"
+    ? `Only requesters from: ${names}`
+    : `All requesters except: ${names}`;
+}
+
 interface ApprovalFlowProps {
   approvalStep: ApprovalFlowStep[];
   formType: FormType[];
@@ -141,6 +161,7 @@ export default function ApprovalFlow({
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragMode, setDragMode] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const handleAddForm = () => {
     setSelectedStep(null);
@@ -300,6 +321,16 @@ export default function ApprovalFlow({
                 ) : (
                   <>
                     <button
+                      onClick={() => setShowPreview((prev) => !prev)}
+                      className={`text-xs px-4 py-2 rounded-sm transition cursor-pointer ${
+                        showPreview
+                          ? "bg-sky-700 text-white hover:bg-sky-800"
+                          : "bg-sky-600 text-white hover:bg-sky-700"
+                      }`}
+                    >
+                      {showPreview ? "Hide Preview" : "Preview Chain"}
+                    </button>
+                    <button
                       onClick={() => setDragMode((prev) => !prev)}
                       className={`text-xs px-4 py-2 rounded-sm transition cursor-pointer ${
                         dragMode
@@ -325,6 +356,14 @@ export default function ApprovalFlow({
                 )}
               </div>
             </div>
+
+            {showPreview && (
+              <ApprovalChainPreview
+                formType={formType}
+                steps={approvalFlow}
+                describeStep={buildStepSummary}
+              />
+            )}
 
             {loading ? (
               <p className="text-center text-sm text-gray-500 dark:text-gray-400 py-6">
@@ -454,6 +493,12 @@ export default function ApprovalFlow({
                               <p className="text-gray-800 dark:text-gray-200">
                                 {buildStepSummary(item)}
                               </p>
+
+                              {buildAppliesToSummary(item) && (
+                                <p className="mt-0.5 text-sky-700 dark:text-sky-400">
+                                  {buildAppliesToSummary(item)}
+                                </p>
+                              )}
 
                               {item.approvalStepApprovers.length > 0 && (
                                 <p className="text-gray-500 dark:text-gray-400 mt-0.5">

@@ -7,6 +7,7 @@ import { Prisma } from "@/generated/client";
 import { getGrievanceStepDeadline } from "../../../../../lib/grievance-deadline";
 import { isEmployeeReviewFormType, isGrievanceFormType } from "../../../../../lib/utils";
 import { advancePastNotifySteps } from "@/lib/notifyStepCascade";
+import { getRequestDetailRows } from "@/lib/emailRequestDetails";
 
 const emailFrom = process.env.EMAIL;
 const webLink = process.env.NEXTAUTH_URL;
@@ -142,6 +143,8 @@ export async function POST(req: NextRequest) {
         })
       : null;
     const requestorDepartmentName = findDepartment?.name ?? "-";
+    // Form-specific rows for the emails' details table (e.g. reason of requisition)
+    const requestDetails = getRequestDetailRows(formType.name, submission.formData);
 
     // 2️⃣ Update current approval
     await prisma.approval.update({
@@ -347,6 +350,7 @@ export async function POST(req: NextRequest) {
           departmentName: requestorDepartmentName,
           submittedAt: submission.createdAt.toLocaleString(),
           requestLink,
+          requestDetails,
         });
 
         if (!cascadeResult.finalized && cascadeResult.approvers.length > 0) {
@@ -367,6 +371,7 @@ export async function POST(req: NextRequest) {
               submittedAt: submission.createdAt.toLocaleString(),
               status: "Pending Approval",
               approvalLink: requestLink,
+              requestDetails,
             },
           };
 
@@ -397,6 +402,7 @@ export async function POST(req: NextRequest) {
             department: requestorDepartmentName,
             finalApproverName: approval.approver.fullname,
             requestLink: `${webLink}/dashboard/approval?id=${submissionId}&name=${formType.name}`,
+            requestDetails,
           },
         };
 
@@ -501,6 +507,7 @@ export async function POST(req: NextRequest) {
           submittedAt: submission.createdAt.toLocaleString(),
           department: requestorDepartmentName,
           rejectedBy: approval.approver.fullname,
+          requestDetails,
           requestLink: `${webLink}/dashboard/approval?id=${submissionId}&name=${formType.name}`,
         },
       };

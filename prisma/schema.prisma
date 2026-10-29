@@ -82,6 +82,7 @@ model Division {
   departments      Department[]
   users            User[]
   ApprovalFlowStep ApprovalFlowStep[]
+  requesterSteps   ApprovalStepRequesterDivision[]
 }
 
 model Department {
@@ -189,6 +190,9 @@ model ApprovalFlowStep {
   formFieldKey        String?
   approvalMode        ApprovalMode       @default(ALL)
   stepType            ApprovalStepType   @default(APPROVER)
+  // Which requesters this step applies to, by the requester's division. This
+  // is separate from divisionId above, which scopes who *approves* the step.
+  requesterDivisionMode RequesterDivisionMode @default(ALL)
   createdAt           DateTime           @default(now())
 
   // Relations
@@ -197,8 +201,28 @@ model ApprovalFlowStep {
   division              Division?              @relation(fields: [divisionId], references: [id])
   section               Section?               @relation(fields: [sectionId], references: [id])
   approvalStepApprovers ApprovalStepApprover[]
+  requesterDivisions    ApprovalStepRequesterDivision[]
   user                  User?                  @relation(fields: [userId], references: [id])
   userId                Int?
+}
+
+// ALL: every requester. ONLY: requesters in the listed divisions.
+// EXCEPT: every requester outside the listed divisions.
+enum RequesterDivisionMode {
+  ALL
+  ONLY
+  EXCEPT
+}
+
+model ApprovalStepRequesterDivision {
+  id         Int @id @default(autoincrement())
+  stepId     Int
+  divisionId Int
+
+  step     ApprovalFlowStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  division Division         @relation(fields: [divisionId], references: [id])
+
+  @@unique([stepId, divisionId])
 }
 
 enum ApproverSourceType {

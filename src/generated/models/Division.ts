@@ -219,6 +219,7 @@ export type DivisionWhereInput = {
   departments?: Prisma.DepartmentListRelationFilter
   users?: Prisma.UserListRelationFilter
   ApprovalFlowStep?: Prisma.ApprovalFlowStepListRelationFilter
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionListRelationFilter
 }
 
 export type DivisionOrderByWithRelationInput = {
@@ -230,6 +231,7 @@ export type DivisionOrderByWithRelationInput = {
   departments?: Prisma.DepartmentOrderByRelationAggregateInput
   users?: Prisma.UserOrderByRelationAggregateInput
   ApprovalFlowStep?: Prisma.ApprovalFlowStepOrderByRelationAggregateInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionOrderByRelationAggregateInput
   _relevance?: Prisma.DivisionOrderByRelevanceInput
 }
 
@@ -245,6 +247,7 @@ export type DivisionWhereUniqueInput = Prisma.AtLeast<{
   departments?: Prisma.DepartmentListRelationFilter
   users?: Prisma.UserListRelationFilter
   ApprovalFlowStep?: Prisma.ApprovalFlowStepListRelationFilter
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionListRelationFilter
 }, "id">
 
 export type DivisionOrderByWithAggregationInput = {
@@ -279,6 +282,7 @@ export type DivisionCreateInput = {
   departments?: Prisma.DepartmentCreateNestedManyWithoutDivisionInput
   users?: Prisma.UserCreateNestedManyWithoutDivisionInput
   ApprovalFlowStep?: Prisma.ApprovalFlowStepCreateNestedManyWithoutDivisionInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionCreateNestedManyWithoutDivisionInput
 }
 
 export type DivisionUncheckedCreateInput = {
@@ -290,6 +294,7 @@ export type DivisionUncheckedCreateInput = {
   departments?: Prisma.DepartmentUncheckedCreateNestedManyWithoutDivisionInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutDivisionInput
   ApprovalFlowStep?: Prisma.ApprovalFlowStepUncheckedCreateNestedManyWithoutDivisionInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionUncheckedCreateNestedManyWithoutDivisionInput
 }
 
 export type DivisionUpdateInput = {
@@ -300,6 +305,7 @@ export type DivisionUpdateInput = {
   departments?: Prisma.DepartmentUpdateManyWithoutDivisionNestedInput
   users?: Prisma.UserUpdateManyWithoutDivisionNestedInput
   ApprovalFlowStep?: Prisma.ApprovalFlowStepUpdateManyWithoutDivisionNestedInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionUpdateManyWithoutDivisionNestedInput
 }
 
 export type DivisionUncheckedUpdateInput = {
@@ -311,6 +317,7 @@ export type DivisionUncheckedUpdateInput = {
   departments?: Prisma.DepartmentUncheckedUpdateManyWithoutDivisionNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutDivisionNestedInput
   ApprovalFlowStep?: Prisma.ApprovalFlowStepUncheckedUpdateManyWithoutDivisionNestedInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionUncheckedUpdateManyWithoutDivisionNestedInput
 }
 
 export type DivisionCreateManyInput = {
@@ -434,6 +441,20 @@ export type DivisionUpdateOneWithoutApprovalFlowStepNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.DivisionUpdateToOneWithWhereWithoutApprovalFlowStepInput, Prisma.DivisionUpdateWithoutApprovalFlowStepInput>, Prisma.DivisionUncheckedUpdateWithoutApprovalFlowStepInput>
 }
 
+export type DivisionCreateNestedOneWithoutRequesterStepsInput = {
+  create?: Prisma.XOR<Prisma.DivisionCreateWithoutRequesterStepsInput, Prisma.DivisionUncheckedCreateWithoutRequesterStepsInput>
+  connectOrCreate?: Prisma.DivisionCreateOrConnectWithoutRequesterStepsInput
+  connect?: Prisma.DivisionWhereUniqueInput
+}
+
+export type DivisionUpdateOneRequiredWithoutRequesterStepsNestedInput = {
+  create?: Prisma.XOR<Prisma.DivisionCreateWithoutRequesterStepsInput, Prisma.DivisionUncheckedCreateWithoutRequesterStepsInput>
+  connectOrCreate?: Prisma.DivisionCreateOrConnectWithoutRequesterStepsInput
+  upsert?: Prisma.DivisionUpsertWithoutRequesterStepsInput
+  connect?: Prisma.DivisionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DivisionUpdateToOneWithWhereWithoutRequesterStepsInput, Prisma.DivisionUpdateWithoutRequesterStepsInput>, Prisma.DivisionUncheckedUpdateWithoutRequesterStepsInput>
+}
+
 export type DivisionCreateWithoutUsersInput = {
   name: string
   isActive?: boolean
@@ -441,6 +462,7 @@ export type DivisionCreateWithoutUsersInput = {
   updatedAt?: Date | string
   departments?: Prisma.DepartmentCreateNestedManyWithoutDivisionInput
   ApprovalFlowStep?: Prisma.ApprovalFlowStepCreateNestedManyWithoutDivisionInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionCreateNestedManyWithoutDivisionInput
 }
 
 export type DivisionUncheckedCreateWithoutUsersInput = {
@@ -451,6 +473,7 @@ export type DivisionUncheckedCreateWithoutUsersInput = {
   updatedAt?: Date | string
   departments?: Prisma.DepartmentUncheckedCreateNestedManyWithoutDivisionInput
   ApprovalFlowStep?: Prisma.ApprovalFlowStepUncheckedCreateNestedManyWithoutDivisionInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionUncheckedCreateNestedManyWithoutDivisionInput
 }
 
 export type DivisionCreateOrConnectWithoutUsersInput = {
@@ -476,6 +499,7 @@ export type DivisionUpdateWithoutUsersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departments?: Prisma.DepartmentUpdateManyWithoutDivisionNestedInput
   ApprovalFlowStep?: Prisma.ApprovalFlowStepUpdateManyWithoutDivisionNestedInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionUpdateManyWithoutDivisionNestedInput
 }
 
 export type DivisionUncheckedUpdateWithoutUsersInput = {
@@ -486,6 +510,7 @@ export type DivisionUncheckedUpdateWithoutUsersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departments?: Prisma.DepartmentUncheckedUpdateManyWithoutDivisionNestedInput
   ApprovalFlowStep?: Prisma.ApprovalFlowStepUncheckedUpdateManyWithoutDivisionNestedInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionUncheckedUpdateManyWithoutDivisionNestedInput
 }
 
 export type DivisionCreateWithoutDepartmentsInput = {
@@ -495,6 +520,7 @@ export type DivisionCreateWithoutDepartmentsInput = {
   updatedAt?: Date | string
   users?: Prisma.UserCreateNestedManyWithoutDivisionInput
   ApprovalFlowStep?: Prisma.ApprovalFlowStepCreateNestedManyWithoutDivisionInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionCreateNestedManyWithoutDivisionInput
 }
 
 export type DivisionUncheckedCreateWithoutDepartmentsInput = {
@@ -505,6 +531,7 @@ export type DivisionUncheckedCreateWithoutDepartmentsInput = {
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutDivisionInput
   ApprovalFlowStep?: Prisma.ApprovalFlowStepUncheckedCreateNestedManyWithoutDivisionInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionUncheckedCreateNestedManyWithoutDivisionInput
 }
 
 export type DivisionCreateOrConnectWithoutDepartmentsInput = {
@@ -530,6 +557,7 @@ export type DivisionUpdateWithoutDepartmentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUpdateManyWithoutDivisionNestedInput
   ApprovalFlowStep?: Prisma.ApprovalFlowStepUpdateManyWithoutDivisionNestedInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionUpdateManyWithoutDivisionNestedInput
 }
 
 export type DivisionUncheckedUpdateWithoutDepartmentsInput = {
@@ -540,6 +568,7 @@ export type DivisionUncheckedUpdateWithoutDepartmentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutDivisionNestedInput
   ApprovalFlowStep?: Prisma.ApprovalFlowStepUncheckedUpdateManyWithoutDivisionNestedInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionUncheckedUpdateManyWithoutDivisionNestedInput
 }
 
 export type DivisionCreateWithoutApprovalFlowStepInput = {
@@ -549,6 +578,7 @@ export type DivisionCreateWithoutApprovalFlowStepInput = {
   updatedAt?: Date | string
   departments?: Prisma.DepartmentCreateNestedManyWithoutDivisionInput
   users?: Prisma.UserCreateNestedManyWithoutDivisionInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionCreateNestedManyWithoutDivisionInput
 }
 
 export type DivisionUncheckedCreateWithoutApprovalFlowStepInput = {
@@ -559,6 +589,7 @@ export type DivisionUncheckedCreateWithoutApprovalFlowStepInput = {
   updatedAt?: Date | string
   departments?: Prisma.DepartmentUncheckedCreateNestedManyWithoutDivisionInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutDivisionInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionUncheckedCreateNestedManyWithoutDivisionInput
 }
 
 export type DivisionCreateOrConnectWithoutApprovalFlowStepInput = {
@@ -584,6 +615,7 @@ export type DivisionUpdateWithoutApprovalFlowStepInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departments?: Prisma.DepartmentUpdateManyWithoutDivisionNestedInput
   users?: Prisma.UserUpdateManyWithoutDivisionNestedInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionUpdateManyWithoutDivisionNestedInput
 }
 
 export type DivisionUncheckedUpdateWithoutApprovalFlowStepInput = {
@@ -594,6 +626,65 @@ export type DivisionUncheckedUpdateWithoutApprovalFlowStepInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departments?: Prisma.DepartmentUncheckedUpdateManyWithoutDivisionNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutDivisionNestedInput
+  requesterSteps?: Prisma.ApprovalStepRequesterDivisionUncheckedUpdateManyWithoutDivisionNestedInput
+}
+
+export type DivisionCreateWithoutRequesterStepsInput = {
+  name: string
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  departments?: Prisma.DepartmentCreateNestedManyWithoutDivisionInput
+  users?: Prisma.UserCreateNestedManyWithoutDivisionInput
+  ApprovalFlowStep?: Prisma.ApprovalFlowStepCreateNestedManyWithoutDivisionInput
+}
+
+export type DivisionUncheckedCreateWithoutRequesterStepsInput = {
+  id?: number
+  name: string
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  departments?: Prisma.DepartmentUncheckedCreateNestedManyWithoutDivisionInput
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutDivisionInput
+  ApprovalFlowStep?: Prisma.ApprovalFlowStepUncheckedCreateNestedManyWithoutDivisionInput
+}
+
+export type DivisionCreateOrConnectWithoutRequesterStepsInput = {
+  where: Prisma.DivisionWhereUniqueInput
+  create: Prisma.XOR<Prisma.DivisionCreateWithoutRequesterStepsInput, Prisma.DivisionUncheckedCreateWithoutRequesterStepsInput>
+}
+
+export type DivisionUpsertWithoutRequesterStepsInput = {
+  update: Prisma.XOR<Prisma.DivisionUpdateWithoutRequesterStepsInput, Prisma.DivisionUncheckedUpdateWithoutRequesterStepsInput>
+  create: Prisma.XOR<Prisma.DivisionCreateWithoutRequesterStepsInput, Prisma.DivisionUncheckedCreateWithoutRequesterStepsInput>
+  where?: Prisma.DivisionWhereInput
+}
+
+export type DivisionUpdateToOneWithWhereWithoutRequesterStepsInput = {
+  where?: Prisma.DivisionWhereInput
+  data: Prisma.XOR<Prisma.DivisionUpdateWithoutRequesterStepsInput, Prisma.DivisionUncheckedUpdateWithoutRequesterStepsInput>
+}
+
+export type DivisionUpdateWithoutRequesterStepsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  departments?: Prisma.DepartmentUpdateManyWithoutDivisionNestedInput
+  users?: Prisma.UserUpdateManyWithoutDivisionNestedInput
+  ApprovalFlowStep?: Prisma.ApprovalFlowStepUpdateManyWithoutDivisionNestedInput
+}
+
+export type DivisionUncheckedUpdateWithoutRequesterStepsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  departments?: Prisma.DepartmentUncheckedUpdateManyWithoutDivisionNestedInput
+  users?: Prisma.UserUncheckedUpdateManyWithoutDivisionNestedInput
+  ApprovalFlowStep?: Prisma.ApprovalFlowStepUncheckedUpdateManyWithoutDivisionNestedInput
 }
 
 
@@ -605,12 +696,14 @@ export type DivisionCountOutputType = {
   departments: number
   users: number
   ApprovalFlowStep: number
+  requesterSteps: number
 }
 
 export type DivisionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   departments?: boolean | DivisionCountOutputTypeCountDepartmentsArgs
   users?: boolean | DivisionCountOutputTypeCountUsersArgs
   ApprovalFlowStep?: boolean | DivisionCountOutputTypeCountApprovalFlowStepArgs
+  requesterSteps?: boolean | DivisionCountOutputTypeCountRequesterStepsArgs
 }
 
 /**
@@ -644,6 +737,13 @@ export type DivisionCountOutputTypeCountApprovalFlowStepArgs<ExtArgs extends run
   where?: Prisma.ApprovalFlowStepWhereInput
 }
 
+/**
+ * DivisionCountOutputType without action
+ */
+export type DivisionCountOutputTypeCountRequesterStepsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ApprovalStepRequesterDivisionWhereInput
+}
+
 
 export type DivisionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -654,6 +754,7 @@ export type DivisionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   departments?: boolean | Prisma.Division$departmentsArgs<ExtArgs>
   users?: boolean | Prisma.Division$usersArgs<ExtArgs>
   ApprovalFlowStep?: boolean | Prisma.Division$ApprovalFlowStepArgs<ExtArgs>
+  requesterSteps?: boolean | Prisma.Division$requesterStepsArgs<ExtArgs>
   _count?: boolean | Prisma.DivisionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["division"]>
 
@@ -672,6 +773,7 @@ export type DivisionInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
   departments?: boolean | Prisma.Division$departmentsArgs<ExtArgs>
   users?: boolean | Prisma.Division$usersArgs<ExtArgs>
   ApprovalFlowStep?: boolean | Prisma.Division$ApprovalFlowStepArgs<ExtArgs>
+  requesterSteps?: boolean | Prisma.Division$requesterStepsArgs<ExtArgs>
   _count?: boolean | Prisma.DivisionCountOutputTypeDefaultArgs<ExtArgs>
 }
 
@@ -681,6 +783,7 @@ export type $DivisionPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     departments: Prisma.$DepartmentPayload<ExtArgs>[]
     users: Prisma.$UserPayload<ExtArgs>[]
     ApprovalFlowStep: Prisma.$ApprovalFlowStepPayload<ExtArgs>[]
+    requesterSteps: Prisma.$ApprovalStepRequesterDivisionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1031,6 +1134,7 @@ export interface Prisma__DivisionClient<T, Null = never, ExtArgs extends runtime
   departments<T extends Prisma.Division$departmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Division$departmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   users<T extends Prisma.Division$usersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Division$usersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ApprovalFlowStep<T extends Prisma.Division$ApprovalFlowStepArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Division$ApprovalFlowStepArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApprovalFlowStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  requesterSteps<T extends Prisma.Division$requesterStepsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Division$requesterStepsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApprovalStepRequesterDivisionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1482,6 +1586,30 @@ export type Division$ApprovalFlowStepArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.ApprovalFlowStepScalarFieldEnum | Prisma.ApprovalFlowStepScalarFieldEnum[]
+}
+
+/**
+ * Division.requesterSteps
+ */
+export type Division$requesterStepsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ApprovalStepRequesterDivision
+   */
+  select?: Prisma.ApprovalStepRequesterDivisionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ApprovalStepRequesterDivision
+   */
+  omit?: Prisma.ApprovalStepRequesterDivisionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ApprovalStepRequesterDivisionInclude<ExtArgs> | null
+  where?: Prisma.ApprovalStepRequesterDivisionWhereInput
+  orderBy?: Prisma.ApprovalStepRequesterDivisionOrderByWithRelationInput | Prisma.ApprovalStepRequesterDivisionOrderByWithRelationInput[]
+  cursor?: Prisma.ApprovalStepRequesterDivisionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ApprovalStepRequesterDivisionScalarFieldEnum | Prisma.ApprovalStepRequesterDivisionScalarFieldEnum[]
 }
 
 /**
